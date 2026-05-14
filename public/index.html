@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Iniciar sesión</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+  <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+</head>
+<body>
+<div class="card">
+
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+  </div>
+
+  <h2>Bienvenido de nuevo</h2>
+  <p class="sub">Ingresa tus credenciales para continuar</p>
+
+  <div id="alert" class="alert"><i class="ti ti-alert-circle"></i><span id="alertMsg"></span></div>
+
+  <div class="field">
+    <label for="email">Correo electrónico</label>
+    <input type="email" id="email" placeholder="tu@correo.com" autocomplete="email"/>
+  </div>
+
+  <div class="field">
+    <label for="pass">Contraseña</label>
+    <div class="pw-wrap">
+      <input type="password" id="pass" placeholder="••••••••" autocomplete="current-password"/>
+      <button type="button" class="pw-btn" id="pwBtn" aria-label="Mostrar contraseña">
+        <i class="ti ti-eye" id="pwIco"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- hCaptcha -->
+  <div class="captcha-wrap">
+    <div class="h-captcha"
+         data-sitekey="8e70d608-8802-480e-b6be-1ea8f04a040a"
+         data-callback="onCaptchaDone"
+         data-expired-callback="onCaptchaExpired">
+    </div>
+  </div>
+
+  <button class="btn" id="loginBtn" disabled onclick="doLogin()">
+    <span class="btn-text">Iniciar sesión</span>
+    <span class="spinner"></span>
+  </button>
+
+  <p class="foot">¿No tienes cuenta? <a href="register.html">Regístrate aquí</a></p>
+</div>
+
+<script>
+  /* ── estado ── */
+  let captchaToken = null;
+
+  function onCaptchaDone(token)  { captchaToken = token; document.getElementById('loginBtn').disabled = false; }
+  function onCaptchaExpired()    { captchaToken = null;  document.getElementById('loginBtn').disabled = true; }
+
+  /* ── toggle password ── */
+  document.getElementById('pwBtn').addEventListener('click', () => {
+    const i = document.getElementById('pass');
+    const v = i.type === 'password';
+    i.type = v ? 'text' : 'password';
+    document.getElementById('pwIco').className = v ? 'ti ti-eye-off' : 'ti ti-eye';
+  });
+
+  /* ── alert helper ── */
+  function showAlert(msg, type = 'error') {
+    const el = document.getElementById('alert');
+    el.className = `alert ${type} show`;
+    document.getElementById('alertMsg').textContent = msg;
+  }
+  function hideAlert() { document.getElementById('alert').className = 'alert'; }
+
+  /* ── login ── */
+  async function doLogin() {
+    hideAlert();
+    const email = document.getElementById('email').value.trim();
+    const pass  = document.getElementById('pass').value;
+    const btn   = document.getElementById('loginBtn');
+
+    if (!email || !pass) { showAlert('Completa todos los campos.'); return; }
+    if (!captchaToken)   { showAlert('Completa el captcha.'); return; }
+
+    btn.classList.add('loading'); btn.disabled = true;
+
+    try {
+      const res  = await fetch('/api/login', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email, password: pass, captchaToken })
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        // Guardar email en sesión y pasar al 2FA
+        sessionStorage.setItem('pending_email', data.email);
+        sessionStorage.setItem('pending_name',  data.name);
+        window.location.href = 'verify-2fa.html';
+      } else {
+        showAlert(data.error || 'Error al iniciar sesión.');
+        // Resetear captcha
+        if (window.hcaptcha) { hcaptcha.reset(); captchaToken = null; btn.disabled = true; }
+      }
+    } catch(e) {
+      showAlert('Error de conexión. Intenta de nuevo.');
+    } finally {
+      btn.classList.remove('loading');
+    }
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter' && captchaToken) doLogin(); });
+</script>
+</body>
+</html>

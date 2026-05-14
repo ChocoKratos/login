@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+</head>
+<body>
+<div class="card">
+
+  <div class="dash-header">
+    <div class="logo" style="margin-bottom:0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+    </div>
+    <a href="index.html" class="logout" onclick="logout()">
+      <i class="ti ti-logout"></i> Cerrar sesión
+    </a>
+  </div>
+
+  <h2 id="welcomeName">¡Acceso concedido!</h2>
+  <p class="sub" id="welcomeSub">Sesión activa y verificada</p>
+
+  <div class="dash-row green">
+    <i class="ti ti-shield-check"></i>
+    <div>
+      <p class="dash-label">Autenticación completada</p>
+      <p class="dash-val">Contraseña ✓ &nbsp; Captcha ✓ &nbsp; 2FA ✓</p>
+    </div>
+  </div>
+
+  <div class="dash-row">
+    <i class="ti ti-mail"></i>
+    <div>
+      <p class="dash-label">Cuenta</p>
+      <p class="dash-val" id="dashEmail">—</p>
+    </div>
+  </div>
+
+  <div class="dash-row">
+    <i class="ti ti-clock"></i>
+    <div>
+      <p class="dash-label">Sesión iniciada</p>
+      <p class="dash-val" id="dashTime">—</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let session = null;
+  try { session = JSON.parse(localStorage.getItem('session')); } catch(e) {}
+  if (!session) { window.location.href = 'index.html'; }
+
+  document.getElementById('welcomeName').textContent = `¡Hola, ${session.name}!`;
+  document.getElementById('welcomeSub').textContent  = `Bienvenido de vuelta, ${session.email}`;
+  document.getElementById('dashEmail').textContent   = session.email;
+
+  // Decodificar timestamp del token
+  try {
+    const payload = JSON.parse(atob(session.token));
+    const d = new Date(payload.ts);
+    document.getElementById('dashTime').textContent = d.toLocaleString('es', {
+      dateStyle: 'medium', timeStyle: 'short'
+    });
+  } catch(e) {
+    document.getElementById('dashTime').textContent = new Date().toLocaleString('es');
+  }
+
+  function logout() {
+    localStorage.removeItem('session');
+    window.location.href = 'index.html';
+  }
+</script>
+</body>
+</html>

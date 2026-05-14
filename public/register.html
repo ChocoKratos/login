@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Crear cuenta</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+  <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+</head>
+<body>
+<div class="card">
+
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+  </div>
+
+  <h2>Crear cuenta</h2>
+  <p class="sub">Completa el formulario para registrarte</p>
+
+  <div id="alert" class="alert"><i class="ti ti-alert-circle"></i><span id="alertMsg"></span></div>
+
+  <div class="field">
+    <label for="name">Nombre completo</label>
+    <input type="text" id="name" placeholder="Juan Pérez" autocomplete="name"/>
+  </div>
+
+  <div class="field">
+    <label for="email">Correo electrónico</label>
+    <input type="email" id="email" placeholder="tu@correo.com" autocomplete="email"/>
+  </div>
+
+  <div class="field">
+    <label for="pass">Contraseña <span class="label-note">(mínimo 8 caracteres)</span></label>
+    <div class="pw-wrap">
+      <input type="password" id="pass" placeholder="••••••••" autocomplete="new-password"/>
+      <button type="button" class="pw-btn" id="pwBtn" aria-label="Mostrar contraseña">
+        <i class="ti ti-eye" id="pwIco"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="pass2">Confirmar contraseña</label>
+    <div class="pw-wrap">
+      <input type="password" id="pass2" placeholder="••••••••" autocomplete="new-password"/>
+      <button type="button" class="pw-btn" id="pwBtn2" aria-label="Mostrar contraseña">
+        <i class="ti ti-eye" id="pwIco2"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- hCaptcha -->
+  <div class="captcha-wrap">
+    <div class="h-captcha"
+         data-sitekey="8e70d608-8802-480e-b6be-1ea8f04a040a"
+         data-callback="onCaptchaDone"
+         data-expired-callback="onCaptchaExpired">
+    </div>
+  </div>
+
+  <button class="btn" id="regBtn" disabled onclick="doRegister()">
+    <span class="btn-text">Crear cuenta</span>
+    <span class="spinner"></span>
+  </button>
+
+  <p class="foot">¿Ya tienes cuenta? <a href="index.html">Inicia sesión</a></p>
+</div>
+
+<!-- QR modal -->
+<div id="qrModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+     display:none;align-items:center;justify-content:center;z-index:999;padding:1rem">
+  <div class="card" style="max-width:380px;text-align:center">
+    <h2 style="margin-bottom:.5rem">Configura tu 2FA</h2>
+    <p class="sub">Escanea este QR con Google Authenticator o Authy y luego inicia sesión</p>
+    <div class="qr-box">
+      <img id="qrImg" src="" alt="QR Code"/>
+      <p class="qr-note">
+        <strong>¿No puedes escanear?</strong><br/>
+        Ingresa este código manualmente:<br/>
+        <code id="qrSecret" style="font-size:12px;word-break:break-all"></code>
+      </p>
+    </div>
+    <button class="btn" onclick="goToLogin()">
+      <span class="btn-text">Ir a iniciar sesión</span>
+      <span class="spinner"></span>
+    </button>
+  </div>
+</div>
+
+<script>
+  let captchaToken = null;
+
+  function onCaptchaDone(token)  { captchaToken = token; document.getElementById('regBtn').disabled = false; }
+  function onCaptchaExpired()    { captchaToken = null;  document.getElementById('regBtn').disabled = true; }
+
+  function togglePw(inputId, iconId) {
+    const i = document.getElementById(inputId);
+    const v = i.type === 'password';
+    i.type = v ? 'text' : 'password';
+    document.getElementById(iconId).className = v ? 'ti ti-eye-off' : 'ti ti-eye';
+  }
+  document.getElementById('pwBtn').addEventListener('click',  () => togglePw('pass',  'pwIco'));
+  document.getElementById('pwBtn2').addEventListener('click', () => togglePw('pass2', 'pwIco2'));
+
+  function showAlert(msg, type = 'error') {
+    const el = document.getElementById('alert');
+    el.className = `alert ${type} show`;
+    document.getElementById('alertMsg').textContent = msg;
+  }
+  function hideAlert() { document.getElementById('alert').className = 'alert'; }
+
+  async function doRegister() {
+    hideAlert();
+    const name  = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const pass  = document.getElementById('pass').value;
+    const pass2 = document.getElementById('pass2').value;
+    const btn   = document.getElementById('regBtn');
+
+    if (!name || !email || !pass || !pass2) { showAlert('Completa todos los campos.'); return; }
+    if (pass.length < 8)  { showAlert('La contraseña debe tener al menos 8 caracteres.'); return; }
+    if (pass !== pass2)   { showAlert('Las contraseñas no coinciden.'); return; }
+    if (!captchaToken)    { showAlert('Completa el captcha.'); return; }
+
+    btn.classList.add('loading'); btn.disabled = true;
+
+    try {
+      const res  = await fetch('/api/register', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ name, email, password: pass, captchaToken })
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        // Mostrar QR
+        document.getElementById('qrImg').src    = data.qr;
+        document.getElementById('qrSecret').textContent = data.secret;
+        document.getElementById('qrModal').style.display = 'flex';
+      } else {
+        showAlert(data.error || 'Error al registrarse.');
+        if (window.hcaptcha) { hcaptcha.reset(); captchaToken = null; btn.disabled = true; }
+      }
+    } catch(e) {
+      showAlert('Error de conexión.');
+    } finally {
+      btn.classList.remove('loading');
+    }
+  }
+
+  function goToLogin() { window.location.href = 'index.html'; }
+</script>
+</body>
+</html>

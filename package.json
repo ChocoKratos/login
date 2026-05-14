@@ -1,0 +1,9 @@
+{
+  "name": "login-premium",
+  "version": "1.0.0",
+  "dependencies": {
+    "otpauth": "^9.3.0",
+    "qrcode": "^1.5.3",
+    "node-fetch": "^2.7.0"
+  }
+}
