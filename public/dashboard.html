@@ -9,11 +9,9 @@
 </head>
 <body>
 <div class="card">
-
   <div class="dash-header">
     <div class="logo" style="margin-bottom:0">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
-           stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
       </svg>
     </div>
@@ -22,8 +20,8 @@
     </a>
   </div>
 
-  <h2 id="welcomeName">¡Acceso concedido!</h2>
-  <p class="sub" id="welcomeSub">Sesión activa y verificada</p>
+  <h2 id="welcomeName">Cargando…</h2>
+  <p class="sub" id="welcomeSub"></p>
 
   <div class="dash-row green">
     <i class="ti ti-shield-check"></i>
@@ -49,32 +47,32 @@
     </div>
   </div>
 
+  <a href="blog.html" class="dash-row" style="cursor:pointer;margin-top:.25rem">
+    <i class="ti ti-writing" style="color:var(--accent)!important;font-size:22px"></i>
+    <div style="flex:1">
+      <p class="dash-label">Blog</p>
+      <p class="dash-val">Ver y publicar posts</p>
+    </div>
+    <i class="ti ti-arrow-right" style="color:var(--text-4)"></i>
+  </a>
 </div>
-
 <script>
   let session = null;
   try { session = JSON.parse(localStorage.getItem('session')); } catch(e) {}
-  if (!session) { window.location.href = 'index.html'; }
+  if (!session) window.location.href = 'index.html';
 
   document.getElementById('welcomeName').textContent = `¡Hola, ${session.name}!`;
   document.getElementById('welcomeSub').textContent  = `Bienvenido de vuelta, ${session.email}`;
   document.getElementById('dashEmail').textContent   = session.email;
 
-  // Decodificar timestamp del token
   try {
     const payload = JSON.parse(atob(session.token));
-    const d = new Date(payload.ts);
-    document.getElementById('dashTime').textContent = d.toLocaleString('es', {
-      dateStyle: 'medium', timeStyle: 'short'
-    });
+    document.getElementById('dashTime').textContent = new Date(payload.ts).toLocaleString('es', { dateStyle:'medium', timeStyle:'short' });
   } catch(e) {
     document.getElementById('dashTime').textContent = new Date().toLocaleString('es');
   }
 
-  function logout() {
-    localStorage.removeItem('session');
-    window.location.href = 'index.html';
-  }
+  function logout() { localStorage.removeItem('session'); }
 </script>
 </body>
 </html>

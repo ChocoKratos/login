@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blog</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+</head>
+<body class="blog-page">
+
+<nav class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+      </svg>
+    </div>
+    <span class="topbar-title">Blog</span>
+  </div>
+  <div class="topbar-right">
+    <span class="topbar-user" id="topbarUser"></span>
+    <a href="dashboard.html" class="topbar-link"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+    <a href="index.html" class="topbar-link" onclick="logout()"><i class="ti ti-logout"></i> Salir</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <div class="no-auth-banner" id="noAuthBanner" style="display:none">
+    <i class="ti ti-info-circle"></i>
+    <span>Puedes leer el blog, pero <a href="index.html">inicia sesión</a> para publicar y comentar.</span>
+  </div>
+
+  <div class="new-post-card" id="newPostCard" style="display:none">
+    <h3><i class="ti ti-edit" aria-hidden="true"></i> Nuevo post</h3>
+    <input type="text" class="post-title-input" id="newTitle" placeholder="Título del post…" maxlength="120"/>
+    <textarea id="newContent" placeholder="¿Qué quieres compartir hoy?…" rows="4"></textarea>
+    <div class="img-preview-wrap" id="imgPreviewWrap">
+      <img id="imgPreview" src="" alt="Preview"/>
+      <button class="img-remove" onclick="removeImg()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="post-actions">
+      <label class="img-label">
+        <i class="ti ti-photo" aria-hidden="true"></i> Imagen
+        <input type="file" id="imgFile" accept="image/*" onchange="previewImg(this)"/>
+      </label>
+      <button class="btn-sm" id="publishBtn" onclick="publishPost()">
+        <span class="btn-text"><i class="ti ti-send" aria-hidden="true"></i> Publicar</span>
+        <span class="spinner"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="feed-header">
+    <h2>Posts recientes</h2>
+    <span class="feed-count" id="feedCount"></span>
+  </div>
+
+  <div id="feed">
+    <div class="loading-state">
+      <i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:20px"></i> Cargando posts…
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let session = null;
+  try { session = JSON.parse(localStorage.getItem('session')); } catch(e) {}
+
+  if (session) {
+    document.getElementById('topbarUser').textContent = session.name;
+    document.getElementById('newPostCard').style.display = 'block';
+  } else {
+    document.getElementById('noAuthBanner').style.display = 'flex';
+  }
+
+  function logout() { localStorage.removeItem('session'); }
+
+  let imgBase64 = null;
+  function previewImg(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 1024 * 1024) { alert('La imagen debe pesar menos de 1MB.'); input.value = ''; return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      imgBase64 = e.target.result;
+      document.getElementById('imgPreview').src = imgBase64;
+      document.getElementById('imgPreviewWrap').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  }
+  function removeImg() {
+    imgBase64 = null;
+    document.getElementById('imgFile').value = '';
+    document.getElementById('imgPreviewWrap').style.display = 'none';
+  }
+
+  function timeAgo(iso) {
+    const diff = (Date.now() - new Date(iso)) / 1000;
+    if (diff < 60)    return 'ahora mismo';
+    if (diff < 3600)  return Math.floor(diff/60) + ' min';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h';
+    return new Date(iso).toLocaleDateString('es', { day:'numeric', month:'short' });
+  }
+
+  function initials(name) {
+    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+  }
+
+  async function loadPosts() {
+    try {
+      const res  = await fetch('/api/posts');
+      const data = await res.json();
+      renderFeed(data.posts || []);
+    } catch(e) {
+      document.getElementById('feed').innerHTML =
+        '<div class="empty-state"><i class="ti ti-wifi-off"></i><p>Error al cargar los posts.</p></div>';
+    }
+  }
+
+  function renderFeed(posts) {
+    document.getElementById('feedCount').textContent = posts.length + ' publicaciones';
+    if (!posts.length) {
+      document.getElementById('feed').innerHTML =
+        '<div class="empty-state"><i class="ti ti-notebook"></i><p>Aún no hay posts. ¡Sé el primero en publicar!</p></div>';
+      return;
+    }
+    document.getElementById('feed').innerHTML = posts.map(p => `
+      <div class="post-card" id="post-${p.id}">
+        ${p.image ? `<img class="post-img" src="${p.image}" alt="${p.title}" loading="lazy"/>` : ''}
+        <div class="post-body">
+          <div class="post-meta">
+            <div class="post-avatar">${initials(p.author)}</div>
+            <span class="post-author">${p.author}</span>
+            <span class="post-date">${timeAgo(p.createdAt)}</span>
+          </div>
+          <div class="post-title">${p.title}</div>
+          <div class="post-content">${p.content}</div>
+        </div>
+        <div class="comments-section">
+          <div class="comments-title">
+            <i class="ti ti-message" aria-hidden="true"></i>
+            <span id="count-${p.id}">${p.comments.length} comentario${p.comments.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div id="comments-${p.id}">${p.comments.map(c => renderComment(c)).join('')}</div>
+          ${session ? `
+          <div class="comment-form">
+            <input type="text" class="comment-input" id="cinput-${p.id}"
+                   placeholder="Escribe un comentario…" maxlength="300"
+                   onkeydown="if(event.key==='Enter') sendComment('${p.id}')"/>
+            <button class="comment-send" onclick="sendComment('${p.id}')">
+              <i class="ti ti-send" aria-hidden="true"></i> Enviar
+            </button>
+          </div>` : `<p style="font-size:12px;color:var(--text-3);margin-top:.5rem">
+            <a href="index.html" style="color:var(--accent)">Inicia sesión</a> para comentar.</p>`}
+        </div>
+      </div>`).join('');
+  }
+
+  function renderComment(c) {
+    return `<div class="comment-item">
+      <div class="comment-avatar">${initials(c.author)}</div>
+      <div class="comment-bubble">
+        <div class="comment-author">${c.author}</div>
+        <div class="comment-text">${c.text}</div>
+        <div class="comment-time">${timeAgo(c.createdAt)}</div>
+      </div>
+    </div>`;
+  }
+
+  async function publishPost() {
+    const title   = document.getElementById('newTitle').value.trim();
+    const content = document.getElementById('newContent').value.trim();
+    const btn     = document.getElementById('publishBtn');
+    if (!title)   { alert('El título es obligatorio.'); return; }
+    if (!content) { alert('El contenido es obligatorio.'); return; }
+    btn.classList.add('loading'); btn.disabled = true;
+    try {
+      const res  = await fetch('/api/posts', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: session.token, title, content, image: imgBase64 })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        document.getElementById('newTitle').value   = '';
+        document.getElementById('newContent').value = '';
+        removeImg();
+        loadPosts();
+      } else { alert(data.error || 'Error al publicar.'); }
+    } catch(e) { alert('Error de conexión.'); }
+    finally { btn.classList.remove('loading'); btn.disabled = false; }
+  }
+
+  async function sendComment(postId) {
+    const input = document.getElementById('cinput-' + postId);
+    const text  = input.value.trim();
+    if (!text) return;
+    try {
+      const res  = await fetch('/api/comments', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: session.token, postId, comment: text })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        document.getElementById('comments-' + postId).insertAdjacentHTML('beforeend', renderComment(data.comment));
+        input.value = '';
+        const count = document.getElementById('comments-' + postId).children.length;
+        document.getElementById('count-' + postId).textContent = count + ' comentario' + (count !== 1 ? 's' : '');
+      } else { alert(data.error || 'Error al comentar.'); }
+    } catch(e) { alert('Error de conexión.'); }
+  }
+
+  loadPosts();
+</script>
+</body>
+</html>

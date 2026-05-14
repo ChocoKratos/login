@@ -10,56 +10,45 @@
 </head>
 <body>
 <div class="card">
-
   <div class="logo">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
-         stroke-linecap="round" stroke-linejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-      <circle cx="12" cy="7" r="4"/>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
     </svg>
   </div>
-
   <h2>Crear cuenta</h2>
   <p class="sub">Completa el formulario para registrarte</p>
 
   <div id="alert" class="alert"><i class="ti ti-alert-circle"></i><span id="alertMsg"></span></div>
 
   <div class="field">
-    <label for="name">Nombre completo</label>
+    <label>Nombre completo</label>
     <input type="text" id="name" placeholder="Juan Pérez" autocomplete="name"/>
   </div>
-
   <div class="field">
-    <label for="email">Correo electrónico</label>
+    <label>Correo electrónico</label>
     <input type="email" id="email" placeholder="tu@correo.com" autocomplete="email"/>
   </div>
-
   <div class="field">
-    <label for="pass">Contraseña <span class="label-note">(mínimo 8 caracteres)</span></label>
+    <label>Contraseña <span class="label-note">(mínimo 8 caracteres)</span></label>
     <div class="pw-wrap">
       <input type="password" id="pass" placeholder="••••••••" autocomplete="new-password"/>
-      <button type="button" class="pw-btn" id="pwBtn" aria-label="Mostrar contraseña">
-        <i class="ti ti-eye" id="pwIco"></i>
-      </button>
+      <button type="button" class="pw-btn" id="pwBtn"><i class="ti ti-eye" id="pwIco"></i></button>
     </div>
   </div>
-
   <div class="field">
-    <label for="pass2">Confirmar contraseña</label>
+    <label>Confirmar contraseña</label>
     <div class="pw-wrap">
       <input type="password" id="pass2" placeholder="••••••••" autocomplete="new-password"/>
-      <button type="button" class="pw-btn" id="pwBtn2" aria-label="Mostrar contraseña">
-        <i class="ti ti-eye" id="pwIco2"></i>
-      </button>
+      <button type="button" class="pw-btn" id="pwBtn2"><i class="ti ti-eye" id="pwIco2"></i></button>
     </div>
   </div>
 
-  <!-- hCaptcha -->
   <div class="captcha-wrap">
     <div class="h-captcha"
          data-sitekey="8e70d608-8802-480e-b6be-1ea8f04a040a"
          data-callback="onCaptchaDone"
-         data-expired-callback="onCaptchaExpired">
+         data-expired-callback="onCaptchaExpired"
+         data-theme="dark">
     </div>
   </div>
 
@@ -67,39 +56,40 @@
     <span class="btn-text">Crear cuenta</span>
     <span class="spinner"></span>
   </button>
-
   <p class="foot">¿Ya tienes cuenta? <a href="index.html">Inicia sesión</a></p>
 </div>
 
-<!-- QR modal -->
-<div id="qrModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
-     display:none;align-items:center;justify-content:center;z-index:999;padding:1rem">
-  <div class="card" style="max-width:380px;text-align:center">
+<!-- QR Modal -->
+<div id="qrModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
+     align-items:center;justify-content:center;z-index:999;padding:1rem">
+  <div class="card" style="max-width:380px;text-align:center;animation:fadeUp .35s ease">
+    <div class="logo" style="margin:0 auto 1.25rem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    </div>
     <h2 style="margin-bottom:.5rem">Configura tu 2FA</h2>
-    <p class="sub">Escanea este QR con Google Authenticator o Authy y luego inicia sesión</p>
+    <p class="sub">Escanea este QR con Google Authenticator o Authy, luego inicia sesión</p>
     <div class="qr-box">
       <img id="qrImg" src="" alt="QR Code"/>
       <p class="qr-note">
-        <strong>¿No puedes escanear?</strong><br/>
-        Ingresa este código manualmente:<br/>
-        <code id="qrSecret" style="font-size:12px;word-break:break-all"></code>
+        ¿No puedes escanear? Ingresa este código manualmente:<br/>
+        <code id="qrSecret"></code>
       </p>
     </div>
-    <button class="btn" onclick="goToLogin()">
-      <span class="btn-text">Ir a iniciar sesión</span>
-      <span class="spinner"></span>
+    <button class="btn" onclick="window.location.href='index.html'">
+      <span class="btn-text"><i class="ti ti-login"></i> Ir a iniciar sesión</span>
     </button>
   </div>
 </div>
 
 <script>
   let captchaToken = null;
+  function onCaptchaDone(t)  { captchaToken = t; document.getElementById('regBtn').disabled = false; }
+  function onCaptchaExpired(){ captchaToken = null; document.getElementById('regBtn').disabled = true; }
 
-  function onCaptchaDone(token)  { captchaToken = token; document.getElementById('regBtn').disabled = false; }
-  function onCaptchaExpired()    { captchaToken = null;  document.getElementById('regBtn').disabled = true; }
-
-  function togglePw(inputId, iconId) {
-    const i = document.getElementById(inputId);
+  function togglePw(iId, iconId) {
+    const i = document.getElementById(iId);
     const v = i.type === 'password';
     i.type = v ? 'text' : 'password';
     document.getElementById(iconId).className = v ? 'ti ti-eye-off' : 'ti ti-eye';
@@ -107,53 +97,40 @@
   document.getElementById('pwBtn').addEventListener('click',  () => togglePw('pass',  'pwIco'));
   document.getElementById('pwBtn2').addEventListener('click', () => togglePw('pass2', 'pwIco2'));
 
-  function showAlert(msg, type = 'error') {
+  function showAlert(msg) {
     const el = document.getElementById('alert');
-    el.className = `alert ${type} show`;
+    el.className = 'alert error show';
     document.getElementById('alertMsg').textContent = msg;
   }
-  function hideAlert() { document.getElementById('alert').className = 'alert'; }
 
   async function doRegister() {
-    hideAlert();
     const name  = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
     const pass  = document.getElementById('pass').value;
     const pass2 = document.getElementById('pass2').value;
     const btn   = document.getElementById('regBtn');
-
     if (!name || !email || !pass || !pass2) { showAlert('Completa todos los campos.'); return; }
-    if (pass.length < 8)  { showAlert('La contraseña debe tener al menos 8 caracteres.'); return; }
-    if (pass !== pass2)   { showAlert('Las contraseñas no coinciden.'); return; }
-    if (!captchaToken)    { showAlert('Completa el captcha.'); return; }
-
+    if (pass.length < 8) { showAlert('La contraseña debe tener al menos 8 caracteres.'); return; }
+    if (pass !== pass2)  { showAlert('Las contraseñas no coinciden.'); return; }
+    if (!captchaToken)   { showAlert('Completa el captcha.'); return; }
     btn.classList.add('loading'); btn.disabled = true;
-
     try {
       const res  = await fetch('/api/register', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ name, email, password: pass, captchaToken })
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password: pass, captchaToken })
       });
       const data = await res.json();
-
       if (data.ok) {
-        // Mostrar QR
-        document.getElementById('qrImg').src    = data.qr;
+        document.getElementById('qrImg').src = data.qr;
         document.getElementById('qrSecret').textContent = data.secret;
         document.getElementById('qrModal').style.display = 'flex';
       } else {
         showAlert(data.error || 'Error al registrarse.');
         if (window.hcaptcha) { hcaptcha.reset(); captchaToken = null; btn.disabled = true; }
       }
-    } catch(e) {
-      showAlert('Error de conexión.');
-    } finally {
-      btn.classList.remove('loading');
-    }
+    } catch(e) { showAlert('Error de conexión.'); }
+    finally { btn.classList.remove('loading'); }
   }
-
-  function goToLogin() { window.location.href = 'index.html'; }
 </script>
 </body>
 </html>

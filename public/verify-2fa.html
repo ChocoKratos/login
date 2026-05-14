@@ -9,94 +9,69 @@
 </head>
 <body>
 <div class="card">
-
   <div class="logo">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
-         stroke-linecap="round" stroke-linejoin="round">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
     </svg>
   </div>
-
   <h2>Verificación en dos pasos</h2>
-  <p class="sub" id="subMsg">Abre Google Authenticator o Authy e ingresa el código de 6 dígitos</p>
+  <p class="sub" id="subMsg">Ingresa el código de tu aplicación autenticadora</p>
 
   <div id="alert" class="alert"><i class="ti ti-alert-circle"></i><span id="alertMsg"></span></div>
 
   <div class="field">
-    <label for="code">Código de 6 dígitos</label>
+    <label>Código de 6 dígitos</label>
     <input type="text" id="code" class="code-input"
            placeholder="000000" maxlength="6"
-           pattern="[0-9]{6}" inputmode="numeric"
-           autocomplete="one-time-code"/>
+           inputmode="numeric" autocomplete="one-time-code"/>
   </div>
 
   <button class="btn" id="verifyBtn" onclick="doVerify()">
-    <span class="btn-text">Verificar</span>
+    <span class="btn-text"><i class="ti ti-shield-check"></i> Verificar</span>
     <span class="spinner"></span>
   </button>
-
   <p class="foot"><a href="index.html">← Volver al login</a></p>
 </div>
-
 <script>
-  // Verificar que venga del login
   const pendingEmail = sessionStorage.getItem('pending_email');
   const pendingName  = sessionStorage.getItem('pending_name');
-  if (!pendingEmail) { window.location.href = 'index.html'; }
+  if (!pendingEmail) window.location.href = 'index.html';
+  document.getElementById('subMsg').textContent = `Hola ${pendingName || ''} — ingresa el código de tu autenticadora`;
 
-  document.getElementById('subMsg').textContent =
-    `Hola ${pendingName || ''} — ingresa el código de tu aplicación autenticadora`;
-
-  function showAlert(msg, type = 'error') {
+  function showAlert(msg) {
     const el = document.getElementById('alert');
-    el.className = `alert ${type} show`;
+    el.className = 'alert error show';
     document.getElementById('alertMsg').textContent = msg;
   }
-  function hideAlert() { document.getElementById('alert').className = 'alert'; }
 
-  // Auto-submit al completar 6 dígitos
   document.getElementById('code').addEventListener('input', function() {
     this.value = this.value.replace(/[^0-9]/g, '');
     if (this.value.length === 6) doVerify();
   });
 
   async function doVerify() {
-    hideAlert();
     const code = document.getElementById('code').value.trim();
     const btn  = document.getElementById('verifyBtn');
-
     if (code.length !== 6) { showAlert('Ingresa los 6 dígitos completos.'); return; }
-
     btn.classList.add('loading'); btn.disabled = true;
-
     try {
       const res  = await fetch('/api/verify-2fa', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email: pendingEmail, code })
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingEmail, code })
       });
       const data = await res.json();
-
       if (data.ok) {
-        // Sesión verificada — guardar y redirigir
         sessionStorage.removeItem('pending_email');
         sessionStorage.removeItem('pending_name');
-        localStorage.setItem('session', JSON.stringify({
-          token: data.token,
-          email: data.email,
-          name:  data.name
-        }));
+        localStorage.setItem('session', JSON.stringify({ token: data.token, email: data.email, name: data.name }));
         window.location.href = 'dashboard.html';
       } else {
         showAlert(data.error || 'Código incorrecto.');
         document.getElementById('code').value = '';
         document.getElementById('code').focus();
       }
-    } catch(e) {
-      showAlert('Error de conexión. Intenta de nuevo.');
-    } finally {
-      btn.classList.remove('loading'); btn.disabled = false;
-    }
+    } catch(e) { showAlert('Error de conexión.'); }
+    finally { btn.classList.remove('loading'); btn.disabled = false; }
   }
 </script>
 </body>
