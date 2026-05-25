@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lab 2 — Firma Electrónica</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+  <style>
+    body { display: block; padding: 0; }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,10,0.88); backdrop-filter: blur(14px);
+      border-bottom: .5px solid var(--border);
+      padding: 0 2rem; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-logo {
+      width: 28px; height: 28px; background: var(--accent);
+      border-radius: 7px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 10px var(--accent-glow);
+    }
+    .topbar-logo svg { width: 14px; height: 14px; }
+    .topbar-title { font-size: 15px; font-weight: 500; color: var(--text-1); }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-link {
+      font-size: 13px; color: var(--text-3); text-decoration: none;
+      display: flex; align-items: center; gap: 4px; transition: color var(--t);
+    }
+    .topbar-link:hover { color: var(--text-1); }
+
+    .page-wrap { max-width: 680px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+    /* ── Lab badge ── */
+    .lab-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--accent-soft); color: var(--accent);
+      border: .5px solid rgba(139,92,246,0.3);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: 12px; font-weight: 500; margin-bottom: 1rem;
+    }
+    .page-title { font-size: 24px; font-weight: 500; color: var(--text-1); letter-spacing: -.4px; margin-bottom: .4rem; }
+    .page-sub   { font-size: 14px; color: var(--text-3); font-weight: 300; margin-bottom: 2rem; line-height: 1.6; }
+
+    /* ── Sections ── */
+    .section {
+      background: var(--card);
+      border: .5px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 1.75rem; margin-bottom: 1.25rem;
+      animation: fadeUp .4s ease;
+    }
+    .section-title {
+      font-size: 13px; font-weight: 500; color: var(--text-1);
+      display: flex; align-items: center; gap: 8px; margin-bottom: 1.25rem;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .section-title i { color: var(--accent); font-size: 18px; }
+
+    /* ── Info row ── */
+    .info-row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 10px 0; border-bottom: .5px solid var(--border);
+      gap: 1rem;
+    }
+    .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .info-label { font-size: 12px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: .4px; flex-shrink: 0; }
+    .info-value { font-size: 13px; color: var(--text-1); text-align: right; word-break: break-all; }
+    .info-value.mono {
+      font-family: 'Courier New', monospace; font-size: 11px;
+      color: var(--accent); background: var(--accent-soft);
+      padding: 4px 8px; border-radius: 6px; text-align: left;
+      word-break: break-all;
+    }
+
+    /* ── Status ── */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500;
+    }
+    .status-badge.valid   { background: var(--green-bg); color: var(--green); border: .5px solid var(--green-border); }
+    .status-badge.invalid { background: var(--red-bg);   color: var(--red);   border: .5px solid var(--red-border); }
+    .status-badge.none    { background: var(--input-bg); color: var(--text-3); border: .5px solid var(--border); }
+
+    /* ── Form ── */
+    .form-grid { display: grid; gap: .85rem; }
+
+    .char-counter {
+      font-size: 11px; color: var(--text-3); text-align: right;
+      margin-top: 4px; transition: color var(--t);
+    }
+    .char-counter.ok  { color: var(--green); }
+    .char-counter.err { color: var(--red); }
+
+    /* ── Diff box ── */
+    .diff-box {
+      display: none; margin-top: 1.25rem;
+      border: .5px solid var(--border); border-radius: var(--r);
+      overflow: hidden;
+    }
+    .diff-box.show { display: block; }
+    .diff-header {
+      background: var(--input-bg); padding: 8px 14px;
+      font-size: 11px; font-weight: 500; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: .5px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .diff-row {
+      display: grid; grid-template-columns: 1fr 1fr;
+      border-top: .5px solid var(--border);
+    }
+    .diff-old { padding: 10px 14px; background: rgba(239,68,68,0.05); border-right: .5px solid var(--border); }
+    .diff-new { padding: 10px 14px; background: rgba(34,197,94,0.05); }
+    .diff-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+    .diff-old .diff-label { color: var(--red); }
+    .diff-new .diff-label { color: var(--green); }
+    .diff-val { font-size: 12px; font-family: 'Courier New', monospace; color: var(--text-2); word-break: break-all; }
+
+    /* ── Alert ── */
+    .page-alert {
+      display: none; align-items: center; gap: 8px;
+      padding: 10px 14px; border-radius: var(--r);
+      font-size: 13px; margin-bottom: 1rem;
+    }
+    .page-alert.show   { display: flex; }
+    .page-alert.error  { background: var(--red-bg);   color: var(--red);   border: .5px solid var(--red-border); }
+    .page-alert.success{ background: var(--green-bg); color: var(--green); border: .5px solid var(--green-border); }
+
+    .loading-overlay {
+      display: none; align-items: center; justify-content: center;
+      gap: 8px; padding: 1rem; color: var(--text-3); font-size: 13px;
+    }
+    .loading-overlay.show { display: flex; }
+  </style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    </div>
+    <span class="topbar-title">Lab 2 — Firma Electrónica</span>
+  </div>
+  <div class="topbar-right">
+    <a href="dashboard.html" class="topbar-link"><i class="ti ti-arrow-left"></i> Dashboard</a>
+    <a href="index.html" class="topbar-link" onclick="logout()"><i class="ti ti-logout"></i> Salir</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <div class="lab-badge"><i class="ti ti-flask"></i> Laboratorio 2</div>
+  <h1 class="page-title">Firma Electrónica HMAC-SHA256</h1>
+  <p class="page-sub">
+    Actualiza tu perfil y observa cómo se genera una firma de 64 caracteres que garantiza
+    la integridad del registro. Cualquier alteración directa en la base de datos
+    sin conocer la <code style="color:var(--accent);background:var(--accent-soft);padding:2px 6px;border-radius:4px">SECRET_KEY</code> será detectada.
+  </p>
+
+  <div id="pageAlert" class="page-alert"><i class="ti ti-alert-circle"></i><span id="pageAlertMsg"></span></div>
+
+  <!-- Registro actual -->
+  <div class="section" id="currentSection">
+    <div class="section-title"><i class="ti ti-database"></i> Registro actual en base de datos</div>
+    <div class="loading-overlay show" id="loadingCurrent">
+      <i class="ti ti-loader" style="animation:spin 1s linear infinite"></i> Cargando registro…
+    </div>
+    <div id="currentData" style="display:none">
+      <div class="info-row">
+        <span class="info-label">Email</span>
+        <span class="info-value" id="curEmail">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Nombre</span>
+        <span class="info-value" id="curName">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Rol</span>
+        <span class="info-value" id="curRole">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Saldo</span>
+        <span class="info-value" id="curBalance">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Actualizado</span>
+        <span class="info-value" id="curUpdated">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Firma HMAC-SHA256</span>
+        <span class="info-value mono" id="curSignature">Sin firma</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Longitud firma</span>
+        <span class="info-value" id="curSigLen">—</span>
+      </div>
+      <div class="info-row" style="border-bottom:none">
+        <span class="info-label">Estado de integridad</span>
+        <span id="curStatus"><span class="status-badge none"><i class="ti ti-minus"></i> Sin verificar</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario de actualización -->
+  <div class="section">
+    <div class="section-title"><i class="ti ti-edit"></i> Actualizar registro (simulación UPDATE)</div>
+    <p style="font-size:13px;color:var(--text-3);margin-bottom:1.25rem;font-weight:300;line-height:1.5">
+      Al guardar se calculará una nueva firma HMAC-SHA256 combinando los datos con la
+      <code style="color:var(--accent);font-size:12px">SECRET_KEY</code> del servidor y se almacenará en la base de datos.
+    </p>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Nombre completo <span class="label-note">(mínimo 20 caracteres)</span></label>
+        <input type="text" id="newName" placeholder="Escribe tu nombre completo aquí…" maxlength="80" oninput="countChars()"/>
+        <div class="char-counter" id="charCounter">0 / 20 mínimo</div>
+      </div>
+
+      <div class="field">
+        <label>Rol</label>
+        <select id="newRole" style="width:100%;padding:11px 14px;font-size:14px;font-family:var(--font);
+          color:var(--text-1);background:var(--input-bg);border:1px solid var(--border);
+          border-radius:var(--r);outline:none;transition:border-color var(--t)">
+          <option value="user">user — Usuario estándar</option>
+          <option value="editor">editor — Puede publicar</option>
+          <option value="admin">admin — Acceso total</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Saldo simulado (USD)</label>
+        <input type="number" id="newBalance" placeholder="0.00" min="0" step="0.01"
+               style="font-family:var(--font)"/>
+      </div>
+    </div>
+
+    <button class="btn" id="updateBtn" onclick="doUpdate()" style="margin-top:1.25rem" disabled>
+      <span class="btn-text"><i class="ti ti-signature"></i> Actualizar y firmar registro</span>
+      <span class="spinner"></span>
+    </button>
+
+    <!-- Diff antes/después -->
+    <div class="diff-box" id="diffBox">
+      <div class="diff-header"><i class="ti ti-git-diff"></i> Comparación antes / después</div>
+      <div class="diff-row">
+        <div class="diff-old">
+          <div class="diff-label">Antes</div>
+          <div class="diff-val" id="diffOld">—</div>
+        </div>
+        <div class="diff-new">
+          <div class="diff-label">Después</div>
+          <div class="diff-val" id="diffNew">—</div>
+        </div>
+      </div>
+      <div style="padding:12px 14px;background:var(--input-bg);border-top:.5px solid var(--border)">
+        <div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Nueva firma generada</div>
+        <div style="font-family:'Courier New',monospace;font-size:11px;color:var(--accent);word-break:break-all" id="diffSig">—</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:4px" id="diffSigLen">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Verificación de integridad -->
+  <div class="section">
+    <div class="section-title"><i class="ti ti-shield-check"></i> Función de verificación</div>
+    <p style="font-size:13px;color:var(--text-3);margin-bottom:1.25rem;font-weight:300;line-height:1.5">
+      Esta función recalcula la firma con los datos actuales del registro y la compara
+      con la firma guardada. Si alguien alteró los datos directamente en la base de datos
+      sin conocer la <code style="color:var(--accent);font-size:12px">SECRET_KEY</code>, la verificación fallará.
+    </p>
+    <button class="btn" id="verifyBtn" onclick="doVerify()" style="background:var(--card-2);
+      border:.5px solid var(--border);color:var(--text-1);box-shadow:none">
+      <span class="btn-text"><i class="ti ti-scan"></i> Verificar integridad del registro</span>
+      <span class="spinner"></span>
+    </button>
+    <div id="verifyResult" style="margin-top:1rem;display:none">
+      <div class="info-row">
+        <span class="info-label">Resultado</span>
+        <span id="verifyStatus"></span>
+      </div>
+      <div class="info-row" style="border-bottom:none">
+        <span class="info-label">Detalle</span>
+        <span class="info-value" id="verifyReason">—</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Sesión ──
+  let session = null;
+  try { session = JSON.parse(localStorage.getItem('session')); } catch(e) {}
+  if (!session) window.location.href = 'index.html';
+
+  function logout() { localStorage.removeItem('session'); }
+
+  function showAlert(msg, type = 'error') {
+    const el = document.getElementById('pageAlert');
+    el.className = `page-alert ${type} show`;
+    document.getElementById('pageAlertMsg').textContent = msg;
+  }
+
+  // ── Contador de caracteres ──
+  function countChars() {
+    const val = document.getElementById('newName').value;
+    const len = val.length;
+    const counter = document.getElementById('charCounter');
+    const btn     = document.getElementById('updateBtn');
+    counter.textContent = `${len} caracteres ${len >= 20 ? '✓' : `— faltan ${20 - len}`}`;
+    counter.className   = len >= 20 ? 'char-counter ok' : len > 0 ? 'char-counter err' : 'char-counter';
+    btn.disabled = len < 20;
+  }
+
+  // ── Cargar registro actual ──
+  async function loadCurrent() {
+    try {
+      const res  = await fetch(`/api/update-profile?token=${encodeURIComponent(session.token)}`);
+      const data = await res.json();
+
+      document.getElementById('loadingCurrent').classList.remove('show');
+      document.getElementById('currentData').style.display = 'block';
+
+      if (data.ok) {
+        const u = data.user;
+        document.getElementById('curEmail').textContent   = u.email;
+        document.getElementById('curName').textContent    = u.name;
+        document.getElementById('curRole').textContent    = u.role;
+        document.getElementById('curBalance').textContent = `$${parseFloat(u.balance || 0).toFixed(2)}`;
+        document.getElementById('curUpdated').textContent = new Date(u.updatedAt).toLocaleString('es');
+        document.getElementById('curSignature').textContent = u.signature || 'Sin firma registrada';
+        document.getElementById('curSigLen').textContent    = u.signature ? `${u.signature.length} caracteres` : '—';
+
+        // Pre-llenar formulario
+        document.getElementById('newName').value    = u.name;
+        document.getElementById('newRole').value    = u.role;
+        document.getElementById('newBalance').value = u.balance;
+        countChars();
+
+        // Estado integridad
+        renderStatus(data.verification, 'curStatus');
+      }
+    } catch(e) {
+      document.getElementById('loadingCurrent').innerHTML =
+        '<i class="ti ti-wifi-off"></i> Error al cargar el registro';
+    }
+  }
+
+  function renderStatus(verification, elementId) {
+    const el = document.getElementById(elementId);
+    if (!verification) return;
+    if (verification.valid) {
+      el.innerHTML = `<span class="status-badge valid"><i class="ti ti-shield-check"></i> ${verification.reason}</span>`;
+    } else {
+      el.innerHTML = `<span class="status-badge invalid"><i class="ti ti-shield-x"></i> ${verification.reason}</span>`;
+    }
+  }
+
+  // ── Actualizar registro ──
+  async function doUpdate() {
+    const name    = document.getElementById('newName').value.trim();
+    const role    = document.getElementById('newRole').value;
+    const balance = parseFloat(document.getElementById('newBalance').value || 0);
+    const btn     = document.getElementById('updateBtn');
+
+    if (name.length < 20) { showAlert('El nombre debe tener al menos 20 caracteres.'); return; }
+
+    btn.classList.add('loading'); btn.disabled = true;
+
+    try {
+      const res  = await fetch('/api/update-profile', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ token: session.token, name, role, balance })
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        // Mostrar diff
+        const prev = data.previous;
+        const upd  = data.updated;
+        document.getElementById('diffOld').textContent =
+          `Nombre: ${prev.name}\nRol: ${prev.role}\nSaldo: $${prev.balance}\nFirma: ${prev.signature || 'ninguna'}`;
+        document.getElementById('diffNew').textContent =
+          `Nombre: ${upd.name}\nRol: ${upd.role}\nSaldo: $${upd.balance}`;
+        document.getElementById('diffSig').textContent = upd.signature;
+        document.getElementById('diffSigLen').textContent = `Longitud: ${upd.signatureLength} caracteres (HMAC-SHA256)`;
+        document.getElementById('diffBox').classList.add('show');
+
+        showAlert('Registro actualizado y firmado correctamente ✓', 'success');
+        loadCurrent();
+      } else {
+        showAlert(data.error || 'Error al actualizar.');
+      }
+    } catch(e) {
+      showAlert('Error de conexión.');
+    } finally {
+      btn.classList.remove('loading'); btn.disabled = false;
+    }
+  }
+
+  // ── Verificar integridad ──
+  async function doVerify() {
+    const btn = document.getElementById('verifyBtn');
+    btn.classList.add('loading'); btn.disabled = true;
+
+    try {
+      const res  = await fetch(`/api/update-profile?token=${encodeURIComponent(session.token)}`);
+      const data = await res.json();
+
+      document.getElementById('verifyResult').style.display = 'block';
+
+      if (data.ok) {
+        renderStatus(data.verification, 'verifyStatus');
+        document.getElementById('verifyReason').textContent = data.verification.reason;
+      } else {
+        document.getElementById('verifyStatus').innerHTML =
+          '<span class="status-badge invalid"><i class="ti ti-x"></i> Error</span>';
+        document.getElementById('verifyReason').textContent = data.error;
+      }
+    } catch(e) {
+      showAlert('Error de conexión.');
+    } finally {
+      btn.classList.remove('loading'); btn.disabled = false;
+    }
+  }
+
+  // Cargar al iniciar
+  loadCurrent();
+</script>
+</body>
+</html>
