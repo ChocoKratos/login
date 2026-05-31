@@ -126,7 +126,7 @@ exports.handler = async (event) => {
   // ── POST: actualizar registro y generar nueva firma ──
   if (event.httpMethod === "POST") {
     try {
-      const { token, name, role, balance } = JSON.parse(event.body || "{}");
+      const { token, name, balance } = JSON.parse(event.body || "{}");
 
       const session = parseToken(token);
       if (!session) return { statusCode: 401, headers, body: JSON.stringify({ ok: false, error: "Sesión inválida." }) };
@@ -142,17 +142,16 @@ exports.handler = async (event) => {
       if (!user) return { statusCode: 404, headers, body: JSON.stringify({ ok: false, error: "Usuario no encontrado." }) };
 
       // ── SIMULACIÓN UPDATE ──
-      // Guardar estado anterior para mostrar en la respuesta
       const previousRecord = {
         name:      user.name,
-        role:      user.role    || "user",
+        role:      "user",  // rol siempre es user, no se modifica
         balance:   user.balance ?? 0,
         signature: user.signature || null
       };
 
-      // Aplicar cambios
+      // Aplicar cambios — el rol NO se modifica, siempre queda "user"
       user.name      = name.trim();
-      user.role      = role    || user.role    || "user";
+      user.role      = "user";
       user.balance   = balance ?? user.balance ?? 0;
       user.updatedAt = new Date().toISOString();
 
@@ -175,7 +174,6 @@ exports.handler = async (event) => {
           updated: {
             email:     user.email,
             name:      user.name,
-            role:      user.role,
             balance:   user.balance,
             updatedAt: user.updatedAt,
             signature: user.signature,

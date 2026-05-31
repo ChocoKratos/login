@@ -180,10 +180,6 @@
         <span class="info-value" id="curName">—</span>
       </div>
       <div class="info-row">
-        <span class="info-label">Rol</span>
-        <span class="info-value" id="curRole">—</span>
-      </div>
-      <div class="info-row">
         <span class="info-label">Saldo</span>
         <span class="info-value" id="curBalance">—</span>
       </div>
@@ -221,16 +217,7 @@
         <div class="char-counter" id="charCounter">0 / 20 mínimo</div>
       </div>
 
-      <div class="field">
-        <label>Rol</label>
-        <select id="newRole" style="width:100%;padding:11px 14px;font-size:14px;font-family:var(--font);
-          color:var(--text-1);background:var(--input-bg);border:1px solid var(--border);
-          border-radius:var(--r);outline:none;transition:border-color var(--t)">
-          <option value="user">user — Usuario estándar</option>
-          <option value="editor">editor — Puede publicar</option>
-          <option value="admin">admin — Acceso total</option>
-        </select>
-      </div>
+
 
       <div class="field">
         <label>Saldo simulado (USD)</label>
@@ -330,7 +317,7 @@
         const u = data.user;
         document.getElementById('curEmail').textContent   = u.email;
         document.getElementById('curName').textContent    = u.name;
-        document.getElementById('curRole').textContent    = u.role;
+
         document.getElementById('curBalance').textContent = `$${parseFloat(u.balance || 0).toFixed(2)}`;
         document.getElementById('curUpdated').textContent = new Date(u.updatedAt).toLocaleString('es');
         document.getElementById('curSignature').textContent = u.signature || 'Sin firma registrada';
@@ -338,7 +325,6 @@
 
         // Pre-llenar formulario
         document.getElementById('newName').value    = u.name;
-        document.getElementById('newRole').value    = u.role;
         document.getElementById('newBalance').value = u.balance;
         countChars();
 
@@ -364,7 +350,6 @@
   // ── Actualizar registro ──
   async function doUpdate() {
     const name    = document.getElementById('newName').value.trim();
-    const role    = document.getElementById('newRole').value;
     const balance = parseFloat(document.getElementById('newBalance').value || 0);
     const btn     = document.getElementById('updateBtn');
 
@@ -376,7 +361,7 @@
       const res  = await fetch('/api/update-profile', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ token: session.token, name, role, balance })
+        body:    JSON.stringify({ token: session.token, name, balance })
       });
       const data = await res.json();
 
@@ -385,9 +370,9 @@
         const prev = data.previous;
         const upd  = data.updated;
         document.getElementById('diffOld').textContent =
-          `Nombre: ${prev.name}\nRol: ${prev.role}\nSaldo: $${prev.balance}\nFirma: ${prev.signature || 'ninguna'}`;
+          `Nombre: ${prev.name}\nSaldo: $${prev.balance}\nFirma: ${prev.signature || 'ninguna'}`;
         document.getElementById('diffNew').textContent =
-          `Nombre: ${upd.name}\nRol: ${upd.role}\nSaldo: $${upd.balance}`;
+          `Nombre: ${upd.name}\nSaldo: $${upd.balance}`;
         document.getElementById('diffSig').textContent = upd.signature;
         document.getElementById('diffSigLen').textContent = `Longitud: ${upd.signatureLength} caracteres (HMAC-SHA256)`;
         document.getElementById('diffBox').classList.add('show');

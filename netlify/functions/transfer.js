@@ -89,8 +89,42 @@ exports.handler = async (event) => {
       const fromUser = data.users[session.email];
       if (!fromUser) return { statusCode: 404, headers, body: JSON.stringify({ ok: false, error: "Usuario no encontrado." }) };
 
+      // ── Verificar firma para transferencias ──
+      if (type === "transfer") {
+        if (!fromUser.signature) {
+          return { statusCode: 403, headers, body: JSON.stringify({
+            ok: false,
+            error: "Necesitas crear tu firma digital antes de transferir.",
+            requiresSignature: true
+          })};
+        }
+        // Verificar que la firma sea válida (no alterada)
+        const crypto = require("crypto");
+        const SECRET_KEY = process.env.SECRET_KEY || "clave-secreta-hmac-2024";
+        const payload = JSON.stringify({
+          email: fromUser.email, name: fromUser.name,
+          role: fromUser.role, balance: fromUser.balance, updatedAt: fromUser.updatedAt
+        });
+        const expectedSig = crypto.createHmac("sha256", SECRET_KEY).update(payload).digest("hex");
+        let sigValid = false;
+        try {
+          sigValid = crypto.timingSafeEqual(
+            Buffer.from(fromUser.signature, "hex"),
+            Buffer.from(expectedSig, "hex")
+          );
+        } catch(e) { sigValid = false; }
+
+        if (!sigValid) {
+          return { statusCode: 403, headers, body: JSON.stringify({
+            ok: false,
+            error: "Tu firma digital es inválida. Ve al Lab 2 y regenera tu firma.",
+            requiresSignature: true
+          })};
+        }
+      }
+
       const now = new Date().toISOString();
-      const txId = `TX-${Date.now()}`;
+      const txId = \`TX-\${Date.now()}\`;
 
       if (type === "transfer") {
         if (!toEmail) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Destinatario requerido." }) };
