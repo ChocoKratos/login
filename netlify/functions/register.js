@@ -2,10 +2,9 @@ const fetch   = require("node-fetch");
 const OTPAuth = require("otpauth");
 const QRCode  = require("qrcode");
 
-const HCAPTCHA_SECRET = process.env.HCAPTCHA_SECRET;
-const JSONBIN_KEY     = process.env.JSONBIN_KEY;
-const JSONBIN_BIN     = process.env.JSONBIN_BIN;
-const BIN_URL         = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN}`;
+const JSONBIN_KEY = process.env.JSONBIN_KEY;
+const JSONBIN_BIN = process.env.JSONBIN_BIN;
+const BIN_URL     = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN}`;
 
 const headers = {
   "Access-Control-Allow-Origin":  "*",
@@ -16,7 +15,7 @@ const headers = {
 async function getData() {
   const res  = await fetch(BIN_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_KEY } });
   const json = await res.json();
-  console.log("getData response status:", res.status);
+  console.log("getData status:", res.status);
   return json.record || { posts: [], users: {} };
 }
 
@@ -26,7 +25,8 @@ async function saveData(data) {
     headers: { "X-Master-Key": JSONBIN_KEY, "Content-Type": "application/json" },
     body: JSON.stringify(data)
   });
-  console.log("saveData response status:", res.status);
+  const json = await res.json();
+  console.log("saveData status:", res.status, JSON.stringify(json).slice(0,200));
   return res.status;
 }
 
@@ -55,13 +55,6 @@ function validateCedula(cedula) {
   return nacional.test(cedula) || extranjero.test(cedula) || pasaporte.test(cedula);
 }
 
-function validateFileSize(base64, maxMB) {
-  if (!base64) return false;
-  const base64Data = base64.split(",")[1] || "";
-  const sizeBytes  = Math.ceil(base64Data.length * 0.75);
-  return sizeBytes <= maxMB * 1024 * 1024;
-}
-
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
   if (event.httpMethod !== "POST")    return { statusCode: 405, headers, body: JSON.stringify({ ok: false, error: "Method not allowed" }) };
@@ -70,12 +63,13 @@ exports.handler = async (event) => {
     const {
       firstName, lastName, email, birthDate,
       cedula, password, confirmPassword,
-      photo, cedulaDoc, initialBalance
+      photoName, cedulaDocName, initialBalance
+      // NOTA: NO recibimos las fotos en base64 aquí
+      // Se guardan en localStorage del navegador para no superar el límite de JSONBin
     } = JSON.parse(event.body || "{}");
 
     console.log("REGISTER attempt:", email);
 
-    // ── Validaciones ──
     if (!firstName || !lastName || !email || !birthDate || !cedula || !password || !confirmPassword)
       return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Todos los campos son obligatorios." }) };
 
@@ -94,20 +88,6 @@ exports.handler = async (event) => {
     if (password !== confirmPassword)
       return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Las contraseñas no coinciden." }) };
 
-    // ── Validar foto ──
-    if (!photo) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "La foto de perfil es requerida." }) };
-    const isImg = photo.startsWith("data:image/jpeg") || photo.startsWith("data:image/jpg") || photo.startsWith("data:image/png");
-    if (!isImg) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "La foto debe ser JPG o PNG." }) };
-    if (!validateFileSize(photo, 2)) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "La foto no puede superar 2MB." }) };
-
-    // ── Validar documento cédula (PDF o imagen) ──
-    if (!cedulaDoc) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "El documento de cédula es requerido." }) };
-    const isPDF = cedulaDoc.startsWith("data:application/pdf");
-    const isDocImg = cedulaDoc.startsWith("data:image/");
-    if (!isPDF && !isDocImg) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "El documento debe ser PDF o imagen." }) };
-    if (!validateFileSize(cedulaDoc, 5)) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "El documento no puede superar 5MB." }) };
-
-    // ── Leer datos ──
     const data = await getData();
     if (!data.users) data.users = {};
     if (!data.posts)  data.posts  = [];
@@ -122,7 +102,7 @@ exports.handler = async (event) => {
     if (cedulaExists)
       return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Esta cédula ya está registrada." }) };
 
-    // ── Crear TOTP ──
+    // Crear TOTP
     const secret = new OTPAuth.Secret();
     const totp   = new OTPAuth.TOTP({
       issuer: "LoginPremium", label: key,
@@ -130,29 +110,29 @@ exports.handler = async (event) => {
     });
     const qrDataURL = await QRCode.toDataURL(totp.toString());
 
-    // ── Guardar usuario ──
     const balance = Math.max(0, parseFloat(initialBalance) || 0);
 
+    // Guardar solo metadatos en JSONBin (sin fotos base64)
     data.users[key] = {
-      firstName:  firstName.trim(),
-      lastName:   lastName.trim(),
-      name:       `${firstName.trim()} ${lastName.trim()}`,
-      email:      key,
+      firstName:    firstName.trim(),
+      lastName:     lastName.trim(),
+      name:         `${firstName.trim()} ${lastName.trim()}`,
+      email:        key,
       birthDate,
-      cedula:     cedulaUpper,
+      cedula:       cedulaUpper,
       password,
-      photo,
-      cedulaDoc,
-      totpSecret: secret.base32,
-      role:       "user",
+      photoName:    photoName || "",    // solo nombre del archivo
+      cedulaDocName: cedulaDocName || "",
+      totpSecret:   secret.base32,
+      role:         "user",
       balance,
       transactions: [],
-      createdAt:  new Date().toISOString(),
-      updatedAt:  new Date().toISOString()
+      createdAt:    new Date().toISOString(),
+      updatedAt:    new Date().toISOString()
     };
 
     const saveStatus = await saveData(data);
-    console.log("User saved:", key, "saveStatus:", saveStatus);
+    console.log("Saved user:", key, "status:", saveStatus);
 
     return {
       statusCode: 200, headers,
@@ -160,7 +140,7 @@ exports.handler = async (event) => {
     };
 
   } catch(err) {
-    console.error("REGISTER error:", err.message, err.stack);
+    console.error("REGISTER error:", err.message);
     return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: "Error interno: " + err.message }) };
   }
 };

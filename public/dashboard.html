@@ -184,15 +184,15 @@
             'Miembro desde ' + new Date(u.updatedAt).toLocaleDateString('es', { year:'numeric', month:'long', day:'numeric' });
         }
 
-        // Foto de perfil
-        if (u.photo) {
+        // Foto de perfil — guardada en localStorage
+        const localPhoto = localStorage.getItem('photo_' + session.email);
+        if (localPhoto) {
           const img = document.createElement('img');
-          img.src       = u.photo;
+          img.src       = localPhoto;
           img.className = 'profile-avatar';
           img.alt       = 'Foto de perfil';
           document.getElementById('avatarPlaceholder').replaceWith(img);
         } else {
-          // Iniciales como fallback
           const initials = (u.name || session.name).split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
           document.getElementById('avatarPlaceholder').textContent = initials;
         }

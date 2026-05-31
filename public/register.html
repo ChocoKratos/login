@@ -440,24 +440,35 @@
   // ── Registro ──
   async function doRegister() {
     hideAlert();
-    const btn = document.getElementById('regBtn');
+    const btn   = document.getElementById('regBtn');
+    const email = document.getElementById('email').value.trim().toLowerCase();
     btn.classList.add('loading'); btn.disabled = true;
 
     try {
+      // Guardar fotos en localStorage (no van al servidor para no superar límite JSONBin)
+      if (photoB64) {
+        try { localStorage.setItem('photo_' + email, photoB64); }
+        catch(e) { console.warn('localStorage lleno, foto no guardada localmente'); }
+      }
+      if (docB64) {
+        try { localStorage.setItem('doc_' + email, docB64); }
+        catch(e) { console.warn('localStorage lleno, doc no guardado localmente'); }
+      }
+
       const res = await fetch('/api/register', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           firstName:       document.getElementById('firstName').value.trim(),
           lastName:        document.getElementById('lastName').value.trim(),
-          email:           document.getElementById('email').value.trim(),
+          email,
           birthDate:       document.getElementById('birthDate').value,
           cedula:          document.getElementById('cedula').value.trim().toUpperCase(),
           password:        document.getElementById('password').value,
           confirmPassword: document.getElementById('confirmPassword').value,
           initialBalance:  parseFloat(document.getElementById('initialBalance').value || 0),
-          photo:           photoB64,
-          cedulaDoc:       docB64,
+          photoName:       document.getElementById('photoFile').files[0]?.name || '',
+          cedulaDocName:   document.getElementById('docFile').files[0]?.name   || '',
           captchaToken:    'bypass'
         })
       });
@@ -471,7 +482,7 @@
         showAlert(data.error || 'Error al registrarse.');
       }
     } catch(e) {
-      showAlert('Error de conexión.');
+      showAlert('Error de conexión: ' + e.message);
     } finally {
       btn.classList.remove('loading'); btn.disabled = false;
     }
