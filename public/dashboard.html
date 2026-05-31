@@ -6,9 +6,63 @@
   <title>Dashboard</title>
   <link rel="stylesheet" href="style.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+  <style>
+    /* ── Profile card ── */
+    .profile-card {
+      background: var(--card-2);
+      border: .5px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .profile-avatar {
+      width: 64px; height: 64px; border-radius: 50%;
+      object-fit: cover; border: 2px solid var(--accent);
+      box-shadow: 0 0 16px var(--accent-glow);
+      flex-shrink: 0;
+    }
+    .profile-avatar-placeholder {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: var(--accent-soft); border: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 500; color: var(--accent);
+      flex-shrink: 0;
+    }
+    .profile-info { flex: 1; min-width: 0; }
+    .profile-name { font-size: 17px; font-weight: 500; color: var(--text-1); letter-spacing: -.3px; }
+    .profile-email { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+    .profile-role {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--accent-soft); color: var(--accent);
+      border: .5px solid rgba(139,92,246,0.2);
+      border-radius: 20px; padding: 2px 10px;
+      font-size: 11px; font-weight: 500; margin-top: 6px;
+    }
+
+    /* ── Balance card ── */
+    .balance-card {
+      background: linear-gradient(135deg, #1a0a2e 0%, #0d0d1a 100%);
+      border: .5px solid rgba(139,92,246,0.3);
+      border-radius: var(--radius-card);
+      padding: 1.5rem; margin-bottom: 1.25rem;
+      position: relative; overflow: hidden;
+    }
+    .balance-card::before {
+      content: '';
+      position: absolute; width: 160px; height: 160px;
+      border-radius: 50%; background: rgba(139,92,246,0.08);
+      filter: blur(40px); top: -40px; right: -20px;
+    }
+    .balance-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .6px; font-weight: 500; margin-bottom: .5rem; }
+    .balance-amount { font-size: 36px; font-weight: 500; color: var(--text-1); letter-spacing: -1px; }
+    .balance-amount span { font-size: 18px; color: var(--text-3); margin-right: 4px; }
+    .balance-since { font-size: 11px; color: var(--text-4); margin-top: .5rem; }
+  </style>
 </head>
 <body>
-<div class="card">
+<div class="card" style="max-width:440px">
+
   <div class="dash-header">
     <div class="logo" style="margin-bottom:0">
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -20,22 +74,29 @@
     </a>
   </div>
 
-  <h2 id="welcomeName">Cargando…</h2>
-  <p class="sub" id="welcomeSub"></p>
+  <!-- Perfil -->
+  <div class="profile-card" id="profileCard">
+    <div class="profile-avatar-placeholder" id="avatarPlaceholder">?</div>
+    <div class="profile-info">
+      <div class="profile-name" id="profileName">Cargando…</div>
+      <div class="profile-email" id="profileEmail"></div>
+      <div class="profile-role" id="profileRole"><i class="ti ti-user"></i> user</div>
+    </div>
+  </div>
 
+  <!-- Balance -->
+  <div class="balance-card">
+    <div class="balance-label"><i class="ti ti-wallet"></i> &nbsp;Balance disponible</div>
+    <div class="balance-amount"><span>$</span><span id="balanceAmount">0.00</span></div>
+    <div class="balance-since" id="balanceSince">Miembro desde —</div>
+  </div>
+
+  <!-- Auth status -->
   <div class="dash-row green">
     <i class="ti ti-shield-check"></i>
     <div>
       <p class="dash-label">Autenticación completada</p>
       <p class="dash-val">Contraseña ✓ &nbsp; Captcha ✓ &nbsp; 2FA ✓</p>
-    </div>
-  </div>
-
-  <div class="dash-row">
-    <i class="ti ti-mail"></i>
-    <div>
-      <p class="dash-label">Cuenta</p>
-      <p class="dash-val" id="dashEmail">—</p>
     </div>
   </div>
 
@@ -47,7 +108,8 @@
     </div>
   </div>
 
-  <a href="blog.html" class="dash-row" style="cursor:pointer;margin-top:.25rem;text-decoration:none">
+  <!-- Blog -->
+  <a href="blog.html" class="dash-row" style="cursor:pointer;text-decoration:none;margin-top:.25rem">
     <i class="ti ti-writing" style="color:var(--accent)!important;font-size:22px"></i>
     <div style="flex:1">
       <p class="dash-label">Blog</p>
@@ -56,6 +118,7 @@
     <i class="ti ti-arrow-right" style="color:var(--text-4)"></i>
   </a>
 
+  <!-- Lab 2 -->
   <a href="profile.html" class="dash-row" style="cursor:pointer;text-decoration:none;
      border-color:rgba(139,92,246,0.2);background:rgba(139,92,246,0.04)">
     <i class="ti ti-flask" style="color:var(--accent)!important;font-size:22px"></i>
@@ -65,24 +128,79 @@
     </div>
     <i class="ti ti-arrow-right" style="color:var(--text-4)"></i>
   </a>
+
 </div>
+
 <script>
   let session = null;
   try { session = JSON.parse(localStorage.getItem('session')); } catch(e) {}
   if (!session) window.location.href = 'index.html';
 
-  document.getElementById('welcomeName').textContent = `¡Hola, ${session.name}!`;
-  document.getElementById('welcomeSub').textContent  = `Bienvenido de vuelta, ${session.email}`;
-  document.getElementById('dashEmail').textContent   = session.email;
+  function logout() { localStorage.removeItem('session'); }
 
+  // Tiempo de sesión
   try {
     const payload = JSON.parse(atob(session.token));
-    document.getElementById('dashTime').textContent = new Date(payload.ts).toLocaleString('es', { dateStyle:'medium', timeStyle:'short' });
+    document.getElementById('dashTime').textContent =
+      new Date(payload.ts).toLocaleString('es', { dateStyle:'medium', timeStyle:'short' });
   } catch(e) {
     document.getElementById('dashTime').textContent = new Date().toLocaleString('es');
   }
 
-  function logout() { localStorage.removeItem('session'); }
+  // Cargar perfil completo desde la API
+  async function loadProfile() {
+    try {
+      const res  = await fetch(`/api/update-profile?token=${encodeURIComponent(session.token)}`);
+      const data = await res.json();
+
+      if (data.ok) {
+        const u = data.user;
+
+        // Nombre y email
+        document.getElementById('profileName').textContent  = u.name  || session.name;
+        document.getElementById('profileEmail').textContent = u.email || session.email;
+
+        // Rol
+        const roleEl = document.getElementById('profileRole');
+        roleEl.innerHTML = `<i class="ti ti-${u.role === 'admin' ? 'shield' : u.role === 'editor' ? 'pencil' : 'user'}"></i> ${u.role || 'user'}`;
+
+        // Balance
+        document.getElementById('balanceAmount').textContent =
+          parseFloat(u.balance || 0).toLocaleString('es', { minimumFractionDigits: 2 });
+
+        // Fecha de membresía
+        if (u.updatedAt) {
+          document.getElementById('balanceSince').textContent =
+            'Miembro desde ' + new Date(u.updatedAt).toLocaleDateString('es', { year:'numeric', month:'long', day:'numeric' });
+        }
+
+        // Foto de perfil
+        if (u.photo) {
+          const img = document.createElement('img');
+          img.src       = u.photo;
+          img.className = 'profile-avatar';
+          img.alt       = 'Foto de perfil';
+          document.getElementById('avatarPlaceholder').replaceWith(img);
+        } else {
+          // Iniciales como fallback
+          const initials = (u.name || session.name).split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+          document.getElementById('avatarPlaceholder').textContent = initials;
+        }
+
+      } else {
+        // Fallback con datos de sesión
+        document.getElementById('profileName').textContent  = session.name;
+        document.getElementById('profileEmail').textContent = session.email;
+        const initials = session.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+        document.getElementById('avatarPlaceholder').textContent = initials;
+      }
+    } catch(e) {
+      document.getElementById('profileName').textContent  = session.name;
+      document.getElementById('profileEmail').textContent = session.email;
+    }
+  }
+
+  loadProfile();
 </script>
 </body>
 </html>
