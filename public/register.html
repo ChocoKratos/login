@@ -6,84 +6,76 @@
   <title>Registro de usuario</title>
   <link rel="stylesheet" href="style.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
-  <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
   <style>
-    /* ── Stepper ── */
-    .stepper {
-      display: flex; align-items: center; gap: 0;
-      margin-bottom: 2rem;
-    }
-    .step {
-      display: flex; align-items: center; gap: 8px;
-      flex: 1;
-    }
+    .stepper { display:flex; align-items:center; margin-bottom:2rem; }
+    .step { display:flex; align-items:center; gap:8px; flex:1; }
     .step-circle {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: var(--input-bg); border: 1.5px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 500; color: var(--text-3);
-      flex-shrink: 0; transition: all var(--t);
+      width:28px; height:28px; border-radius:50%;
+      background:var(--input-bg); border:1.5px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      font-size:12px; font-weight:500; color:var(--text-3); flex-shrink:0;
+      transition:all var(--t);
     }
-    .step.active   .step-circle { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 12px var(--accent-glow); }
-    .step.done     .step-circle { background: var(--green);  border-color: var(--green);  color: #fff; }
-    .step-label { font-size: 11px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: .4px; }
-    .step.active .step-label { color: var(--text-1); }
-    .step-line { flex: 1; height: .5px; background: var(--border); margin: 0 8px; max-width: 32px; }
+    .step.active .step-circle { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 0 12px var(--accent-glow); }
+    .step.done   .step-circle { background:var(--green);  border-color:var(--green);  color:#fff; }
+    .step-label { font-size:11px; color:var(--text-3); font-weight:500; text-transform:uppercase; letter-spacing:.4px; }
+    .step.active .step-label { color:var(--text-1); }
+    .step-line { flex:1; height:.5px; background:var(--border); margin:0 6px; max-width:28px; }
 
-    /* ── Upload boxes ── */
+    .step-panel { display:none; animation:fadeUp .3s ease; }
+    .step-panel.active { display:block; }
+
     .upload-box {
-      border: 1.5px dashed var(--border);
-      border-radius: var(--r); padding: 1.5rem;
-      text-align: center; cursor: pointer;
-      transition: border-color var(--t), background var(--t);
-      position: relative;
+      border:1.5px dashed var(--border); border-radius:var(--r);
+      padding:1.25rem; text-align:center; cursor:pointer; position:relative;
+      transition:border-color var(--t), background var(--t);
     }
-    .upload-box:hover { border-color: var(--accent); background: var(--accent-soft); }
-    .upload-box.has-file { border-color: var(--green); border-style: solid; background: var(--green-bg); }
-    .upload-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-    .upload-icon { font-size: 28px; color: var(--text-3); margin-bottom: 6px; display: block; }
-    .upload-box.has-file .upload-icon { color: var(--green); }
-    .upload-label { font-size: 13px; color: var(--text-3); font-weight: 300; }
-    .upload-box.has-file .upload-label { color: var(--green); font-weight: 500; }
-    .upload-hint  { font-size: 11px; color: var(--text-4); margin-top: 4px; }
+    .upload-box:hover { border-color:var(--accent); background:var(--accent-soft); }
+    .upload-box.has-file { border-color:var(--green); border-style:solid; background:var(--green-bg); }
+    .upload-box input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .upload-icon { font-size:26px; color:var(--text-3); display:block; margin-bottom:5px; }
+    .upload-box.has-file .upload-icon { color:var(--green); }
+    .upload-label { font-size:13px; color:var(--text-3); font-weight:300; }
+    .upload-box.has-file .upload-label { color:var(--green); font-weight:500; }
+    .upload-hint { font-size:11px; color:var(--text-4); margin-top:3px; }
 
-    .photo-preview {
-      width: 80px; height: 80px; border-radius: 50%;
-      object-fit: cover; border: 2px solid var(--green);
-      display: none; margin: 0 auto 8px;
+    .photo-preview { width:72px; height:72px; border-radius:50%; object-fit:cover; border:2px solid var(--green); display:none; margin:0 auto 8px; }
+
+    .pw-bar { height:3px; border-radius:2px; background:var(--input-bg); margin:6px 0 4px; overflow:hidden; }
+    .pw-bar-fill { height:100%; border-radius:2px; width:0%; transition:width .3s, background .3s; }
+    .pw-rules { display:grid; grid-template-columns:1fr 1fr; gap:3px; }
+    .pw-rule { font-size:11px; color:var(--text-4); display:flex; align-items:center; gap:4px; }
+    .pw-rule.ok { color:var(--green); }
+
+    .field-error { font-size:11px; color:var(--red); margin-top:4px; display:none; }
+    .field-error.show { display:block; }
+    input.err { border-color:var(--red-border) !important; }
+    input.ok  { border-color:var(--green-border) !important; }
+
+    .btn-back {
+      background:var(--card-2); color:var(--text-2);
+      box-shadow:none; border:.5px solid var(--border);
     }
+    .btn-back:hover { background:#1f1f1f !important; }
 
-    /* ── Password strength ── */
-    .pw-strength { margin-top: 6px; }
-    .pw-bar { height: 3px; border-radius: 2px; background: var(--input-bg); margin-bottom: 4px; overflow: hidden; }
-    .pw-bar-fill { height: 100%; border-radius: 2px; width: 0%; transition: width .3s, background .3s; }
-    .pw-rules { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
-    .pw-rule { font-size: 11px; color: var(--text-4); display: flex; align-items: center; gap: 4px; }
-    .pw-rule.ok { color: var(--green); }
-    .pw-rule i  { font-size: 12px; }
-
-    /* ── Field validation ── */
-    .field-error { font-size: 11px; color: var(--red); margin-top: 4px; display: none; }
-    .field-error.show { display: block; }
-    input.err { border-color: var(--red-border) !important; }
-    input.ok  { border-color: var(--green-border) !important; }
-
-    /* ── Steps panels ── */
-    .step-panel { display: none; animation: fadeUp .3s ease; }
-    .step-panel.active { display: block; }
-
-    /* ── QR Modal ── */
     .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,.8); z-index: 999;
-      align-items: center; justify-content: center; padding: 1rem;
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,.8); z-index:999;
+      align-items:center; justify-content:center; padding:1rem;
     }
-    .modal-overlay.show { display: flex; }
+    .modal-overlay.show { display:flex; }
+
+    /* Balance input */
+    .balance-input-wrap { position:relative; }
+    .balance-prefix {
+      position:absolute; left:14px; top:50%; transform:translateY(-50%);
+      font-size:14px; color:var(--text-3); pointer-events:none;
+    }
+    .balance-input-wrap input { padding-left:28px !important; }
   </style>
 </head>
 <body>
 <div class="card" style="max-width:480px">
-
   <div class="logo">
     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
@@ -94,56 +86,46 @@
 
   <!-- Stepper -->
   <div class="stepper">
-    <div class="step active" id="s1">
-      <div class="step-circle">1</div>
-      <span class="step-label">Datos</span>
-    </div>
+    <div class="step active" id="s1"><div class="step-circle">1</div><span class="step-label">Datos</span></div>
     <div class="step-line"></div>
-    <div class="step" id="s2">
-      <div class="step-circle">2</div>
-      <span class="step-label">Seguridad</span>
-    </div>
+    <div class="step" id="s2"><div class="step-circle">2</div><span class="step-label">Seguridad</span></div>
     <div class="step-line"></div>
-    <div class="step" id="s3">
-      <div class="step-circle">3</div>
-      <span class="step-label">Archivos</span>
-    </div>
+    <div class="step" id="s3"><div class="step-circle">3</div><span class="step-label">Archivos</span></div>
   </div>
 
   <div id="alertBox" class="alert"><i class="ti ti-alert-circle"></i><span id="alertMsg"></span></div>
 
-  <!-- ── PASO 1: Datos personales ── -->
+  <!-- ── PASO 1 ── -->
   <div class="step-panel active" id="panel1">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
       <div class="field">
         <label>Nombre</label>
-        <input type="text" id="firstName" placeholder="Juan" oninput="validateField(this,'name')"/>
+        <input type="text" id="firstName" placeholder="Juan" oninput="liveValidate(this,'name')"/>
         <span class="field-error" id="err-firstName"></span>
       </div>
       <div class="field">
         <label>Apellido</label>
-        <input type="text" id="lastName" placeholder="Pérez" oninput="validateField(this,'name')"/>
+        <input type="text" id="lastName" placeholder="Pérez" oninput="liveValidate(this,'name')"/>
         <span class="field-error" id="err-lastName"></span>
       </div>
     </div>
 
     <div class="field">
       <label>Correo electrónico</label>
-      <input type="email" id="email" placeholder="tu@correo.com" oninput="validateField(this,'email')"/>
+      <input type="email" id="email" placeholder="tu@correo.com" oninput="liveValidate(this,'email')"/>
       <span class="field-error" id="err-email"></span>
     </div>
 
     <div class="field">
       <label>Fecha de nacimiento <span class="label-note">(mayor de 18 años)</span></label>
-      <input type="date" id="birthDate" oninput="validateField(this,'date')"
-             style="color-scheme:dark"/>
+      <input type="date" id="birthDate" oninput="liveValidate(this,'date')" style="color-scheme:dark"/>
       <span class="field-error" id="err-birthDate"></span>
     </div>
 
     <div class="field">
       <label>Cédula panameña</label>
-      <div style="display:flex;gap:.5rem;margin-bottom:.5rem">
-        <select id="cedulaType" onchange="updateCedulaPlaceholder()"
+      <div style="display:flex;gap:.5rem;margin-bottom:6px">
+        <select id="cedulaType" onchange="resetCedula()"
                 style="padding:11px 10px;font-size:13px;font-family:var(--font);
                 color:var(--text-1);background:var(--input-bg);border:1px solid var(--border);
                 border-radius:var(--r);outline:none;flex-shrink:0;cursor:pointer">
@@ -151,15 +133,24 @@
           <option value="extranjero">Extranjero (E-)</option>
           <option value="pasaporte">Pasaporte (PE-)</option>
         </select>
-        <input type="text" id="cedula" placeholder="8-123-4567" maxlength="15"
+        <input type="text" id="cedula" placeholder="8-123-4567"
                oninput="maskCedula(this)" style="flex:1"/>
       </div>
       <span style="font-size:11px;color:var(--text-4)">
         Nacional: <code style="color:var(--accent)">8-123-4567</code> &nbsp;|&nbsp;
-        Extranjero: <code style="color:var(--accent)">E-123-4567</code> &nbsp;|&nbsp;
+        Extranjero: <code style="color:var(--accent)">E-123-456</code> &nbsp;|&nbsp;
         Pasaporte: <code style="color:var(--accent)">PE-12-3456</code>
       </span>
       <span class="field-error" id="err-cedula"></span>
+    </div>
+
+    <div class="field">
+      <label>Balance inicial <span class="label-note">(cuánto dinero tienes)</span></label>
+      <div class="balance-input-wrap">
+        <span class="balance-prefix">$</span>
+        <input type="number" id="initialBalance" placeholder="0.00" min="0" step="0.01"
+               style="font-family:var(--font)" value="0"/>
+      </div>
     </div>
 
     <button class="btn" onclick="goStep(2)">
@@ -167,90 +158,68 @@
     </button>
   </div>
 
-  <!-- ── PASO 2: Contraseña ── -->
+  <!-- ── PASO 2 ── -->
   <div class="step-panel" id="panel2">
     <div class="field">
       <label>Contraseña</label>
       <div class="pw-wrap">
         <input type="password" id="password" placeholder="••••••••" oninput="checkPassword()"/>
-        <button type="button" class="pw-btn" onclick="togglePw('password','pwIco1')">
-          <i class="ti ti-eye" id="pwIco1"></i>
-        </button>
+        <button type="button" class="pw-btn" onclick="togglePw('password','ico1')"><i class="ti ti-eye" id="ico1"></i></button>
       </div>
-      <div class="pw-strength">
-        <div class="pw-bar"><div class="pw-bar-fill" id="pwBarFill"></div></div>
-        <div class="pw-rules">
-          <span class="pw-rule" id="rule-len"><i class="ti ti-x"></i> 8+ caracteres</span>
-          <span class="pw-rule" id="rule-upper"><i class="ti ti-x"></i> Una mayúscula</span>
-          <span class="pw-rule" id="rule-num"><i class="ti ti-x"></i> Un número</span>
-          <span class="pw-rule" id="rule-special"><i class="ti ti-x"></i> Un carácter especial</span>
-        </div>
+      <div class="pw-bar"><div class="pw-bar-fill" id="pwFill"></div></div>
+      <div class="pw-rules">
+        <span class="pw-rule" id="r-len"><i class="ti ti-x"></i> 8+ caracteres</span>
+        <span class="pw-rule" id="r-upper"><i class="ti ti-x"></i> Una mayúscula</span>
+        <span class="pw-rule" id="r-num"><i class="ti ti-x"></i> Un número</span>
+        <span class="pw-rule" id="r-special"><i class="ti ti-x"></i> Un especial</span>
       </div>
     </div>
 
-    <div class="field">
+    <div class="field" style="margin-top:.75rem">
       <label>Verificar contraseña</label>
       <div class="pw-wrap">
         <input type="password" id="confirmPassword" placeholder="••••••••" oninput="checkConfirm()"/>
-        <button type="button" class="pw-btn" onclick="togglePw('confirmPassword','pwIco2')">
-          <i class="ti ti-eye" id="pwIco2"></i>
-        </button>
+        <button type="button" class="pw-btn" onclick="togglePw('confirmPassword','ico2')"><i class="ti ti-eye" id="ico2"></i></button>
       </div>
       <span class="field-error" id="err-confirm"></span>
     </div>
 
-    <div style="display:flex;gap:.75rem;margin-top:.5rem">
-      <button class="btn" onclick="goStep(1)" style="background:var(--card-2);color:var(--text-2);box-shadow:none;border:.5px solid var(--border)">
-        <span class="btn-text"><i class="ti ti-arrow-left"></i> Atrás</span>
-      </button>
-      <button class="btn" id="step2Btn" onclick="goStep(3)" disabled>
-        <span class="btn-text">Continuar <i class="ti ti-arrow-right"></i></span>
-      </button>
+    <div style="display:flex;gap:.75rem;margin-top:.75rem">
+      <button class="btn btn-back" onclick="goStep(1)"><span class="btn-text"><i class="ti ti-arrow-left"></i> Atrás</span></button>
+      <button class="btn" id="step2Btn" onclick="goStep(3)" disabled><span class="btn-text">Continuar <i class="ti ti-arrow-right"></i></span></button>
     </div>
   </div>
 
-  <!-- ── PASO 3: Archivos + Captcha ── -->
+  <!-- ── PASO 3 ── -->
   <div class="step-panel" id="panel3">
 
-    <!-- Foto de perfil -->
+    <!-- Foto -->
     <div class="field">
       <label>Foto de perfil <span class="label-note">(JPG/PNG máx 2MB)</span></label>
       <div class="upload-box" id="photoBox">
         <input type="file" id="photoFile" accept="image/jpeg,image/png" onchange="handlePhoto(this)"/>
         <img id="photoPreview" class="photo-preview" src="" alt="preview"/>
         <i class="ti ti-user-circle upload-icon" id="photoIcon"></i>
-        <div class="upload-label" id="photoLabel">Haz clic o arrastra tu foto aquí</div>
-        <div class="upload-hint">JPG o PNG · máximo 2MB</div>
+        <div class="upload-label" id="photoLabel">Haz clic para subir tu foto</div>
+        <div class="upload-hint">JPG o PNG · máx 2MB</div>
       </div>
       <span class="field-error" id="err-photo"></span>
     </div>
 
-    <!-- PDF cédula -->
+    <!-- Documento cédula (PDF o imagen) -->
     <div class="field">
-      <label>PDF de la cédula <span class="label-note">(máx 5MB)</span></label>
-      <div class="upload-box" id="pdfBox">
-        <input type="file" id="pdfFile" accept="application/pdf" onchange="handlePDF(this)"/>
-        <i class="ti ti-file-type-pdf upload-icon" id="pdfIcon"></i>
-        <div class="upload-label" id="pdfLabel">Haz clic o arrastra el PDF aquí</div>
-        <div class="upload-hint">Solo PDF · máximo 5MB</div>
+      <label>Documento de cédula <span class="label-note">(PDF o imagen, máx 5MB)</span></label>
+      <div class="upload-box" id="docBox">
+        <input type="file" id="docFile" accept="application/pdf,image/*" onchange="handleDoc(this)"/>
+        <i class="ti ti-file upload-icon" id="docIcon"></i>
+        <div class="upload-label" id="docLabel">Haz clic para subir PDF o imagen</div>
+        <div class="upload-hint">PDF o imagen · máx 5MB</div>
       </div>
-      <span class="field-error" id="err-pdf"></span>
+      <span class="field-error" id="err-doc"></span>
     </div>
 
-    <!-- hCaptcha -->
-    <div class="captcha-wrap">
-      <div class="h-captcha"
-           data-sitekey="8e70d608-8802-480e-b6be-1ea8f04a040a"
-           data-callback="onCaptchaDone"
-           data-expired-callback="onCaptchaExpired"
-           data-theme="dark">
-      </div>
-    </div>
-
-    <div style="display:flex;gap:.75rem">
-      <button class="btn" onclick="goStep(2)" style="background:var(--card-2);color:var(--text-2);box-shadow:none;border:.5px solid var(--border)">
-        <span class="btn-text"><i class="ti ti-arrow-left"></i> Atrás</span>
-      </button>
+    <div style="display:flex;gap:.75rem;margin-top:.25rem">
+      <button class="btn btn-back" onclick="goStep(2)"><span class="btn-text"><i class="ti ti-arrow-left"></i> Atrás</span></button>
       <button class="btn" id="regBtn" onclick="doRegister()" disabled>
         <span class="btn-text"><i class="ti ti-user-plus"></i> Crear cuenta</span>
         <span class="spinner"></span>
@@ -270,13 +239,10 @@
       </svg>
     </div>
     <h2 style="margin-bottom:.5rem">¡Cuenta creada!</h2>
-    <p class="sub">Escanea este QR con <strong>Google Authenticator</strong> o <strong>Authy</strong> para activar el 2FA</p>
+    <p class="sub">Escanea este QR con <strong>Google Authenticator</strong> o <strong>Authy</strong></p>
     <div class="qr-box">
-      <img id="qrImg" src="" alt="QR Code"/>
-      <p class="qr-note">
-        ¿No puedes escanear? Ingresa este código manualmente:<br/>
-        <code id="qrSecret"></code>
-      </p>
+      <img id="qrImg" src="" alt="QR"/>
+      <p class="qr-note">Código manual:<br/><code id="qrSecret"></code></p>
     </div>
     <button class="btn" onclick="window.location.href='index.html'">
       <span class="btn-text"><i class="ti ti-login"></i> Ir a iniciar sesión</span>
@@ -285,28 +251,20 @@
 </div>
 
 <script>
-  let captchaToken = null;
-  let photoB64     = null;
-  let pdfB64       = null;
-  let pwValid      = false;
+  let photoB64 = null, docB64 = null, pwValid = false;
 
-  function onCaptchaDone(t)  { captchaToken = t; checkStep3Ready(); }
-  function onCaptchaExpired(){ captchaToken = null; checkStep3Ready(); }
-
-  // ── Toggle password ──
-  function togglePw(id, iconId) {
+  function togglePw(id, ico) {
     const i = document.getElementById(id);
     const v = i.type === 'password';
-    i.type  = v ? 'text' : 'password';
-    document.getElementById(iconId).className = v ? 'ti ti-eye-off' : 'ti ti-eye';
+    i.type = v ? 'text' : 'password';
+    document.getElementById(ico).className = v ? 'ti ti-eye-off' : 'ti ti-eye';
   }
 
-  // ── Alert ──
   function showAlert(msg) {
     const el = document.getElementById('alertBox');
     el.className = 'alert error show';
     document.getElementById('alertMsg').textContent = msg;
-    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    el.scrollIntoView({ behavior:'smooth', block:'nearest' });
   }
   function hideAlert() { document.getElementById('alertBox').className = 'alert'; }
 
@@ -315,194 +273,168 @@
     hideAlert();
     if (n === 2 && !validateStep1()) return;
     if (n === 3 && !validateStep2()) return;
-
     for (let i = 1; i <= 3; i++) {
       document.getElementById('panel' + i).classList.toggle('active', i === n);
       const s = document.getElementById('s' + i);
       s.classList.toggle('active', i === n);
-      s.classList.toggle('done',   i < n);
+      s.classList.toggle('done', i < n);
     }
   }
 
-  // ── Validaciones paso 1 ──
-  function validateField(input, type) {
+  // ── Validación paso 1 ──
+  function liveValidate(input, type) {
     const errEl = document.getElementById('err-' + input.id);
-    let msg = '';
     const v = input.value.trim();
-
-    if (type === 'name') {
-      if (v.length < 2) msg = 'Mínimo 2 caracteres.';
-    } else if (type === 'email') {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) msg = 'Formato de correo inválido.';
-    } else if (type === 'date') {
-      if (!v) { msg = 'Fecha requerida.'; }
+    let msg = '';
+    if (type === 'name'  && v.length < 2) msg = 'Mínimo 2 caracteres.';
+    if (type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) msg = 'Correo inválido.';
+    if (type === 'date') {
+      if (!v) { msg = 'Requerido.'; }
       else {
-        const d   = new Date(v);
-        const age = Math.floor((Date.now() - d) / (365.25 * 24 * 3600 * 1000));
+        const age = Math.floor((Date.now() - new Date(v)) / (365.25*24*3600*1000));
         if (age < 18) msg = 'Debes ser mayor de 18 años.';
       }
-    } else if (type === 'cedula') {
-      const nacional   = /^[1-9]-\d{1,4}-\d{1,6}$/;
-      const extranjero = /^E-\d{1,4}-\d{1,6}$/;
-      const pasaporte  = /^PE-\d{1,4}-\d{1,6}$/;
-      if (!nacional.test(v) && !extranjero.test(v) && !pasaporte.test(v))
-        msg = 'Formato inválido. Ej: 8-123-4567 / E-123-456 / PE-12-3456';
     }
-
-    if (msg) {
-      input.className = 'err'; errEl.textContent = msg; errEl.classList.add('show');
-    } else {
-      input.className = 'ok'; errEl.classList.remove('show');
-    }
+    if (msg) { input.className='err'; errEl.textContent=msg; errEl.classList.add('show'); }
+    else     { input.className='ok'; errEl.classList.remove('show'); }
   }
 
   function validateStep1() {
-    const fields = ['firstName','lastName','email','birthDate','cedula'];
-    const types  = ['name','name','email','date','cedula'];
+    const fields = [['firstName','name'],['lastName','name'],['email','email'],['birthDate','date']];
     let ok = true;
-    fields.forEach((id, i) => {
+    fields.forEach(([id, type]) => {
       const el = document.getElementById(id);
-      validateField(el, types[i]);
+      liveValidate(el, type);
       if (!el.classList.contains('ok')) ok = false;
     });
+    // Cédula
+    const ced = document.getElementById('cedula');
+    if (!isCedulaValid(ced.value)) {
+      ced.className = 'err';
+      document.getElementById('err-cedula').textContent = 'Formato de cédula inválido.';
+      document.getElementById('err-cedula').classList.add('show');
+      ok = false;
+    }
     if (!ok) showAlert('Corrige los errores antes de continuar.');
     return ok;
   }
 
-  // ── Validaciones paso 2 ──
+  // ── Cédula panameña ──
+  function isCedulaValid(v) {
+    const nacional   = /^[1-9]-\d+-\d+$/;
+    const extranjero = /^E-\d+-\d+$/;
+    const pasaporte  = /^PE-\d+-\d+$/;
+    return nacional.test(v) || extranjero.test(v) || pasaporte.test(v);
+  }
+
+  function resetCedula() {
+    const input = document.getElementById('cedula');
+    const type  = document.getElementById('cedulaType').value;
+    const ph    = { nacional:'8-123-4567', extranjero:'E-123-456', pasaporte:'PE-12-3456' };
+    input.placeholder = ph[type];
+    input.value = '';
+    input.className = '';
+    document.getElementById('err-cedula').classList.remove('show');
+  }
+
+  function maskCedula(input) {
+    const type = document.getElementById('cedulaType').value;
+    let v = input.value.toUpperCase();
+
+    if (type === 'nacional') {
+      // Auto-insertar guiones: X-XXXX-XXXXXX
+      let digits = v.replace(/\D/g, '');
+      if (digits.length > 1)  v = digits[0] + '-' + digits.slice(1);
+      else                    v = digits;
+      digits = v.replace(/[^\d-]/g, '');
+      const parts = digits.split('-');
+      if (parts.length >= 2 && parts[1].length > 4) {
+        v = parts[0] + '-' + parts[1].slice(0,4) + '-' + parts[1].slice(4) + (parts[2] || '');
+      }
+    } else if (type === 'extranjero') {
+      if (!v.startsWith('E-')) v = 'E-' + v.replace(/^[E\-]*/,'');
+    } else if (type === 'pasaporte') {
+      if (!v.startsWith('PE-')) v = 'PE-' + v.replace(/^[PE\-]*/,'');
+    }
+
+    input.value = v;
+    const errEl = document.getElementById('err-cedula');
+    if (isCedulaValid(v)) { input.className='ok'; errEl.classList.remove('show'); }
+    else                  { input.className=''; errEl.classList.remove('show'); }
+  }
+
+  // ── Contraseña ──
   function checkPassword() {
     const v = document.getElementById('password').value;
-    const rules = {
-      len:     v.length >= 8,
-      upper:   /[A-Z]/.test(v),
-      num:     /\d/.test(v),
-      special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v)
-    };
-    Object.entries(rules).forEach(([key, ok]) => {
-      const el = document.getElementById('rule-' + key);
+    const rules = { len: v.length>=8, upper:/[A-Z]/.test(v), num:/\d/.test(v), special:/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v) };
+    Object.entries(rules).forEach(([k,ok]) => {
+      const el = document.getElementById('r-'+k);
       el.classList.toggle('ok', ok);
       el.querySelector('i').className = ok ? 'ti ti-check' : 'ti ti-x';
     });
     const score = Object.values(rules).filter(Boolean).length;
-    const fill  = document.getElementById('pwBarFill');
-    const colors = ['', '#EF4444', '#F97316', '#EAB308', '#22C55E'];
-    fill.style.width      = (score * 25) + '%';
-    fill.style.background = colors[score] || '';
+    const fill  = document.getElementById('pwFill');
+    fill.style.width      = (score*25)+'%';
+    fill.style.background = ['','#EF4444','#F97316','#EAB308','#22C55E'][score];
     pwValid = score === 4;
     document.getElementById('step2Btn').disabled = !pwValid;
     checkConfirm();
   }
 
   function checkConfirm() {
-    const pw  = document.getElementById('password').value;
-    const pw2 = document.getElementById('confirmPassword').value;
-    const err = document.getElementById('err-confirm');
-    const inp = document.getElementById('confirmPassword');
-    if (pw2 && pw !== pw2) {
-      err.textContent = 'Las contraseñas no coinciden.'; err.classList.add('show');
-      inp.className = 'err';
-    } else if (pw2 && pw === pw2) {
-      err.classList.remove('show'); inp.className = 'ok';
-    }
+    const pw=document.getElementById('password').value, pw2=document.getElementById('confirmPassword').value;
+    const err=document.getElementById('err-confirm'), inp=document.getElementById('confirmPassword');
+    if (pw2 && pw!==pw2) { err.textContent='Las contraseñas no coinciden.'; err.classList.add('show'); inp.className='err'; }
+    else if (pw2)        { err.classList.remove('show'); inp.className='ok'; }
   }
 
   function validateStep2() {
     if (!pwValid) { showAlert('La contraseña no cumple los requisitos.'); return false; }
-    const pw  = document.getElementById('password').value;
-    const pw2 = document.getElementById('confirmPassword').value;
-    if (pw !== pw2) { showAlert('Las contraseñas no coinciden.'); return false; }
+    if (document.getElementById('password').value !== document.getElementById('confirmPassword').value)
+      { showAlert('Las contraseñas no coinciden.'); return false; }
     return true;
   }
 
-  // ── Paso 3: archivos ──
+  // ── Archivos ──
   function handlePhoto(input) {
-    const file  = input.files[0];
-    const errEl = document.getElementById('err-photo');
-    const box   = document.getElementById('photoBox');
+    const file=input.files[0], err=document.getElementById('err-photo'), box=document.getElementById('photoBox');
     if (!file) return;
-    if (!['image/jpeg','image/jpg','image/png'].includes(file.type)) {
-      errEl.textContent = 'Solo se aceptan JPG o PNG.'; errEl.classList.add('show'); return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      errEl.textContent = 'La foto no puede superar 2MB.'; errEl.classList.add('show'); return;
-    }
-    errEl.classList.remove('show');
+    if (!['image/jpeg','image/jpg','image/png'].includes(file.type)) { err.textContent='Solo JPG o PNG.'; err.classList.add('show'); return; }
+    if (file.size > 2*1024*1024) { err.textContent='Máximo 2MB.'; err.classList.add('show'); return; }
+    err.classList.remove('show');
     const reader = new FileReader();
     reader.onload = e => {
       photoB64 = e.target.result;
-      const preview = document.getElementById('photoPreview');
-      preview.src   = photoB64; preview.style.display = 'block';
-      document.getElementById('photoIcon').style.display  = 'none';
-      document.getElementById('photoLabel').textContent   = file.name;
+      const prev = document.getElementById('photoPreview');
+      prev.src = photoB64; prev.style.display = 'block';
+      document.getElementById('photoIcon').style.display = 'none';
+      document.getElementById('photoLabel').textContent  = '✓ ' + file.name;
       box.classList.add('has-file');
-      checkStep3Ready();
+      checkStep3();
     };
     reader.readAsDataURL(file);
   }
 
-  function handlePDF(input) {
-    const file  = input.files[0];
-    const errEl = document.getElementById('err-pdf');
-    const box   = document.getElementById('pdfBox');
+  function handleDoc(input) {
+    const file=input.files[0], err=document.getElementById('err-doc'), box=document.getElementById('docBox');
     if (!file) return;
-    if (file.type !== 'application/pdf') {
-      errEl.textContent = 'Solo se aceptan archivos PDF.'; errEl.classList.add('show'); return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      errEl.textContent = 'El PDF no puede superar 5MB.'; errEl.classList.add('show'); return;
-    }
-    errEl.classList.remove('show');
+    const allowed = ['application/pdf','image/jpeg','image/jpg','image/png','image/webp'];
+    if (!allowed.includes(file.type)) { err.textContent='Solo PDF o imagen.'; err.classList.add('show'); return; }
+    if (file.size > 5*1024*1024) { err.textContent='Máximo 5MB.'; err.classList.add('show'); return; }
+    err.classList.remove('show');
     const reader = new FileReader();
     reader.onload = e => {
-      pdfB64 = e.target.result;
-      document.getElementById('pdfLabel').textContent = '✓ ' + file.name;
+      docB64 = e.target.result;
+      document.getElementById('docLabel').textContent = '✓ ' + file.name;
+      document.getElementById('docIcon').className   = 'ti ti-circle-check upload-icon';
       box.classList.add('has-file');
-      document.getElementById('pdfIcon').className = 'ti ti-circle-check upload-icon';
-      checkStep3Ready();
+      checkStep3();
     };
     reader.readAsDataURL(file);
   }
 
-  function checkStep3Ready() {
-    document.getElementById('regBtn').disabled = !(photoB64 && pdfB64 && captchaToken);
-  }
-
-  // ── Máscara cédula panameña ──
-  function updateCedulaPlaceholder() {
-    const type  = document.getElementById('cedulaType').value;
-    const input = document.getElementById('cedula');
-    const placeholders = {
-      nacional:   '8-123-4567',
-      extranjero: 'E-123-4567',
-      pasaporte:  'PE-12-3456'
-    };
-    input.placeholder = placeholders[type];
-    input.value = '';
-    document.getElementById('err-cedula').classList.remove('show');
-    input.className = '';
-  }
-
-  function maskCedula(input) {
-    const type = document.getElementById('cedulaType').value;
-    let v = input.value.toUpperCase().replace(/[^0-9EPE\-]/g, '');
-
-    // Aplicar prefijo automático
-    if (type === 'extranjero' && !v.startsWith('E-')) {
-      v = 'E-' + v.replace(/^E-?/, '');
-    } else if (type === 'pasaporte' && !v.startsWith('PE-')) {
-      v = 'PE-' + v.replace(/^P?E?-?/, '');
-    }
-
-    // Auto-insertar guiones para nacional: X-XXX-XXXX
-    if (type === 'nacional') {
-      v = v.replace(/[^0-9]/g, '');
-      if (v.length > 1)  v = v[0] + '-' + v.slice(1);
-      if (v.length > 6)  v = v.slice(0,6) + '-' + v.slice(6);
-      if (v.length > 13) v = v.slice(0,13);
-    }
-
-    input.value = v;
-    validateField(input, 'cedula');
+  function checkStep3() {
+    document.getElementById('regBtn').disabled = !(photoB64 && docB64);
   }
 
   // ── Registro ──
@@ -512,8 +444,8 @@
     btn.classList.add('loading'); btn.disabled = true;
 
     try {
-      const res  = await fetch('/api/register', {
-        method: 'POST',
+      const res = await fetch('/api/register', {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           firstName:       document.getElementById('firstName').value.trim(),
@@ -523,26 +455,25 @@
           cedula:          document.getElementById('cedula').value.trim().toUpperCase(),
           password:        document.getElementById('password').value,
           confirmPassword: document.getElementById('confirmPassword').value,
+          initialBalance:  parseFloat(document.getElementById('initialBalance').value || 0),
           photo:           photoB64,
-          cedulaPDF:       pdfB64,
-          captchaToken
+          cedulaDoc:       docB64,
+          captchaToken:    'bypass'
         })
       });
       const data = await res.json();
 
       if (data.ok) {
-        document.getElementById('qrImg').src            = data.qr;
-        document.getElementById('qrSecret').textContent = data.secret;
+        document.getElementById('qrImg').src             = data.qr;
+        document.getElementById('qrSecret').textContent  = data.secret;
         document.getElementById('qrModal').classList.add('show');
       } else {
         showAlert(data.error || 'Error al registrarse.');
-        if (window.hcaptcha) { hcaptcha.reset(); captchaToken = null; }
-        checkStep3Ready();
       }
     } catch(e) {
-      showAlert('Error de conexión. Intenta de nuevo.');
+      showAlert('Error de conexión.');
     } finally {
-      btn.classList.remove('loading');
+      btn.classList.remove('loading'); btn.disabled = false;
     }
   }
 </script>

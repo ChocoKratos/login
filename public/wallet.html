@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Billetera</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+  <style>
+    body { display:block; padding:0; }
+    .topbar {
+      position:sticky; top:0; z-index:100;
+      background:rgba(10,10,10,0.88); backdrop-filter:blur(14px);
+      border-bottom:.5px solid var(--border);
+      padding:0 2rem; height:56px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .topbar-left { display:flex; align-items:center; gap:12px; }
+    .topbar-logo { width:28px; height:28px; background:var(--accent); border-radius:7px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 10px var(--accent-glow); }
+    .topbar-logo svg { width:14px; height:14px; }
+    .topbar-title { font-size:15px; font-weight:500; color:var(--text-1); }
+    .topbar-right { display:flex; align-items:center; gap:16px; }
+    .topbar-link { font-size:13px; color:var(--text-3); text-decoration:none; display:flex; align-items:center; gap:4px; transition:color var(--t); }
+    .topbar-link:hover { color:var(--text-1); }
+
+    .page-wrap { max-width:600px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+
+    /* Balance card */
+    .balance-card {
+      background:linear-gradient(135deg,#1a0a2e 0%,#0d0d1a 100%);
+      border:.5px solid rgba(139,92,246,0.3);
+      border-radius:var(--radius-card);
+      padding:1.75rem; margin-bottom:1.5rem; position:relative; overflow:hidden;
+    }
+    .balance-card::before { content:''; position:absolute; width:180px; height:180px; border-radius:50%; background:rgba(139,92,246,0.07); filter:blur(50px); top:-40px; right:-20px; }
+    .balance-label { font-size:11px; color:var(--text-3); text-transform:uppercase; letter-spacing:.6px; font-weight:500; margin-bottom:.5rem; }
+    .balance-amount { font-size:40px; font-weight:500; color:var(--text-1); letter-spacing:-1px; }
+    .balance-amount span { font-size:20px; color:var(--text-3); margin-right:4px; }
+
+    /* Action buttons */
+    .action-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; margin-bottom:1.5rem; }
+    .action-btn {
+      background:var(--card); border:.5px solid var(--border);
+      border-radius:var(--r); padding:1rem .5rem;
+      text-align:center; cursor:pointer;
+      transition:border-color var(--t), background var(--t);
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+    }
+    .action-btn:hover { border-color:var(--accent); background:var(--accent-soft); }
+    .action-btn.active { border-color:var(--accent); background:var(--accent-soft); }
+    .action-btn i { font-size:22px; color:var(--accent); }
+    .action-btn span { font-size:12px; color:var(--text-2); font-weight:500; }
+
+    /* Transaction form */
+    .tx-form {
+      background:var(--card); border:.5px solid var(--border);
+      border-radius:var(--radius-card); padding:1.5rem;
+      margin-bottom:1.5rem; display:none; animation:fadeUp .3s ease;
+    }
+    .tx-form.show { display:block; }
+    .tx-form h3 { font-size:15px; font-weight:500; color:var(--text-1); margin-bottom:1rem; display:flex; align-items:center; gap:8px; }
+
+    .search-result {
+      background:var(--input-bg); border:.5px solid var(--border);
+      border-radius:var(--r); padding:10px 14px; margin-top:6px;
+      display:none; align-items:center; gap:10px;
+    }
+    .search-result.show { display:flex; }
+    .search-avatar {
+      width:32px; height:32px; border-radius:50%;
+      background:var(--accent-soft); color:var(--accent);
+      display:flex; align-items:center; justify-content:center;
+      font-size:12px; font-weight:500; flex-shrink:0;
+    }
+
+    /* Transactions list */
+    .tx-list { display:flex; flex-direction:column; gap:.6rem; }
+    .tx-item {
+      background:var(--card); border:.5px solid var(--border);
+      border-radius:var(--r); padding:12px 14px;
+      display:flex; align-items:center; gap:12px;
+      animation:fadeUp .3s ease;
+    }
+    .tx-icon {
+      width:36px; height:36px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px; flex-shrink:0;
+    }
+    .tx-icon.out     { background:rgba(239,68,68,0.1);  color:var(--red); }
+    .tx-icon.in      { background:rgba(34,197,94,0.1);  color:var(--green); }
+    .tx-icon.deposit { background:rgba(139,92,246,0.1); color:var(--accent); }
+    .tx-icon.withdraw{ background:rgba(239,68,68,0.1);  color:var(--red); }
+    .tx-info { flex:1; min-width:0; }
+    .tx-title { font-size:13px; font-weight:500; color:var(--text-1); }
+    .tx-sub   { font-size:11px; color:var(--text-3); margin-top:2px; }
+    .tx-amount { font-size:14px; font-weight:500; flex-shrink:0; }
+    .tx-amount.out  { color:var(--red); }
+    .tx-amount.in   { color:var(--green); }
+    .tx-amount.dep  { color:var(--accent); }
+    .tx-amount.with { color:var(--red); }
+
+    .empty-tx { text-align:center; padding:2.5rem 1rem; color:var(--text-3); }
+    .empty-tx i { font-size:32px; display:block; margin-bottom:.75rem; color:var(--text-4); }
+
+    .toast {
+      position:fixed; bottom:2rem; left:50%; transform:translateX(-50%);
+      background:var(--green); color:#fff; padding:10px 20px;
+      border-radius:20px; font-size:13px; font-weight:500;
+      opacity:0; transition:opacity .3s; pointer-events:none; z-index:999;
+      display:flex; align-items:center; gap:8px;
+    }
+    .toast.show { opacity:1; }
+    .toast.error { background:var(--red); }
+  </style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
+      </svg>
+    </div>
+    <span class="topbar-title">Billetera</span>
+  </div>
+  <div class="topbar-right">
+    <a href="dashboard.html" class="topbar-link"><i class="ti ti-arrow-left"></i> Dashboard</a>
+    <a href="index.html" class="topbar-link" onclick="logout()"><i class="ti ti-logout"></i> Salir</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- Balance -->
+  <div class="balance-card">
+    <div class="balance-label"><i class="ti ti-wallet"></i> &nbsp;Balance disponible</div>
+    <div class="balance-amount"><span>$</span><span id="balanceAmt">0.00</span></div>
+    <div style="font-size:12px;color:var(--text-3);margin-top:.5rem" id="balanceUser"></div>
+  </div>
+
+  <!-- Acciones -->
+  <div class="action-grid">
+    <div class="action-btn" onclick="showForm('transfer')">
+      <i class="ti ti-send"></i><span>Transferir</span>
+    </div>
+    <div class="action-btn" onclick="showForm('deposit')">
+      <i class="ti ti-circle-plus"></i><span>Depositar</span>
+    </div>
+    <div class="action-btn" onclick="showForm('withdraw')">
+      <i class="ti ti-circle-minus"></i><span>Retirar</span>
+    </div>
+  </div>
+
+  <!-- Formulario transferencia -->
+  <div class="tx-form" id="formTransfer">
+    <h3><i class="ti ti-send" style="color:var(--accent)"></i> Transferir fondos</h3>
+    <div class="field">
+      <label>Buscar destinatario</label>
+      <input type="text" id="searchUser" placeholder="Nombre o email…" oninput="searchRecipient()"/>
+      <div class="search-result" id="searchResult">
+        <div class="search-avatar" id="resultAvatar"></div>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text-1)" id="resultName"></div>
+          <div style="font-size:11px;color:var(--text-3)" id="resultEmail"></div>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Monto (USD)</label>
+      <div style="position:relative">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-3)">$</span>
+        <input type="number" id="transferAmt" placeholder="0.00" min="0.01" step="0.01" style="padding-left:28px"/>
+      </div>
+    </div>
+    <div class="field">
+      <label>Descripción <span class="label-note">(opcional)</span></label>
+      <input type="text" id="transferDesc" placeholder="Pago de servicio…" maxlength="100"/>
+    </div>
+    <button class="btn" id="transferBtn" onclick="doTransaction('transfer')" disabled>
+      <span class="btn-text"><i class="ti ti-send"></i> Transferir</span>
+      <span class="spinner"></span>
+    </button>
+  </div>
+
+  <!-- Formulario depósito -->
+  <div class="tx-form" id="formDeposit">
+    <h3><i class="ti ti-circle-plus" style="color:var(--accent)"></i> Depositar fondos</h3>
+    <div class="field">
+      <label>Monto a depositar (USD)</label>
+      <div style="position:relative">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-3)">$</span>
+        <input type="number" id="depositAmt" placeholder="0.00" min="0.01" step="0.01" style="padding-left:28px"/>
+      </div>
+    </div>
+    <div class="field">
+      <label>Descripción <span class="label-note">(opcional)</span></label>
+      <input type="text" id="depositDesc" placeholder="Depósito bancario…" maxlength="100"/>
+    </div>
+    <button class="btn" onclick="doTransaction('deposit')">
+      <span class="btn-text"><i class="ti ti-circle-plus"></i> Depositar</span>
+      <span class="spinner"></span>
+    </button>
+  </div>
+
+  <!-- Formulario retiro -->
+  <div class="tx-form" id="formWithdraw">
+    <h3><i class="ti ti-circle-minus" style="color:var(--red)"></i> Retirar fondos</h3>
+    <div class="field">
+      <label>Monto a retirar (USD)</label>
+      <div style="position:relative">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-3)">$</span>
+        <input type="number" id="withdrawAmt" placeholder="0.00" min="0.01" step="0.01" style="padding-left:28px"/>
+      </div>
+    </div>
+    <div class="field">
+      <label>Descripción <span class="label-note">(opcional)</span></label>
+      <input type="text" id="withdrawDesc" placeholder="Retiro cajero…" maxlength="100"/>
+    </div>
+    <button class="btn" style="background:#2a0a0a;border:.5px solid var(--red-border);box-shadow:none" onclick="doTransaction('withdraw')">
+      <span class="btn-text"><i class="ti ti-circle-minus"></i> Retirar</span>
+      <span class="spinner"></span>
+    </button>
+  </div>
+
+  <!-- Historial -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+    <h2 style="font-size:17px;font-weight:500;color:var(--text-1)">Historial</h2>
+    <span style="font-size:12px;color:var(--text-3)" id="txCount"></span>
+  </div>
+  <div id="txList" class="tx-list">
+    <div style="text-align:center;padding:2rem;color:var(--text-4);font-size:13px">
+      <i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:20px"></i> Cargando…
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let session = null, currentBalance = 0, recipientEmail = null;
+  try { session = JSON.parse(localStorage.getItem('session')); } catch(e) {}
+  if (!session) window.location.href = 'index.html';
+
+  function logout() { localStorage.removeItem('session'); }
+
+  function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.className = `toast ${type} show`;
+    t.innerHTML = `<i class="ti ti-${type==='success'?'circle-check':'alert-circle'}"></i> ${msg}`;
+    setTimeout(() => t.className = 'toast', 3000);
+  }
+
+  function initials(name) {
+    return (name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  }
+
+  function timeAgo(iso) {
+    const diff = (Date.now() - new Date(iso)) / 1000;
+    if (diff < 60)    return 'ahora';
+    if (diff < 3600)  return Math.floor(diff/60) + ' min';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h';
+    return new Date(iso).toLocaleDateString('es', {day:'numeric',month:'short'});
+  }
+
+  // ── Cargar datos ──
+  async function loadWallet() {
+    try {
+      const res  = await fetch(`/api/update-profile?token=${encodeURIComponent(session.token)}`);
+      const data = await res.json();
+      if (data.ok) {
+        currentBalance = data.user.balance || 0;
+        document.getElementById('balanceAmt').textContent =
+          currentBalance.toLocaleString('es', {minimumFractionDigits:2});
+        document.getElementById('balanceUser').textContent = data.user.name + ' · ' + data.user.email;
+        renderTx(data.user.transactions || []);
+      }
+    } catch(e) { showToast('Error al cargar billetera', 'error'); }
+  }
+
+  function renderTx(txs) {
+    document.getElementById('txCount').textContent = txs.length + ' transacciones';
+    if (!txs.length) {
+      document.getElementById('txList').innerHTML =
+        '<div class="empty-tx"><i class="ti ti-receipt-off"></i><p>Sin transacciones aún</p></div>';
+      return;
+    }
+    document.getElementById('txList').innerHTML = txs.map(tx => {
+      const isOut  = tx.type === 'transfer_out' || tx.type === 'withdraw';
+      const isIn   = tx.type === 'transfer_in';
+      const isDep  = tx.type === 'deposit';
+      const iconClass = tx.type === 'transfer_out' ? 'out' : tx.type === 'transfer_in' ? 'in' : tx.type === 'deposit' ? 'deposit' : 'withdraw';
+      const icon      = tx.type === 'transfer_out' ? 'ti-send' : tx.type === 'transfer_in' ? 'ti-inbox' : tx.type === 'deposit' ? 'ti-circle-plus' : 'ti-circle-minus';
+      const amtClass  = isOut ? 'out' : isIn ? 'in' : isDep ? 'dep' : 'with';
+      const amtSign   = isOut ? '-' : '+';
+      const title     = tx.type === 'transfer_out' ? `Transferencia a ${tx.toName||tx.to}`
+                      : tx.type === 'transfer_in'  ? `Transferencia de ${tx.fromName||tx.from}`
+                      : tx.type === 'deposit'      ? 'Depósito'
+                      : 'Retiro';
+      return `<div class="tx-item">
+        <div class="tx-icon ${iconClass}"><i class="ti ${icon}"></i></div>
+        <div class="tx-info">
+          <div class="tx-title">${title}</div>
+          <div class="tx-sub">${tx.description||''} · ${timeAgo(tx.date)}</div>
+        </div>
+        <div class="tx-amount ${amtClass}">${amtSign}$${parseFloat(tx.amount).toFixed(2)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Mostrar formulario ──
+  function showForm(type) {
+    ['transfer','deposit','withdraw'].forEach(t => {
+      document.getElementById('form'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('show', t===type);
+    });
+    document.querySelectorAll('.action-btn').forEach((b,i) => {
+      b.classList.toggle('active', ['transfer','deposit','withdraw'][i] === type);
+    });
+  }
+
+  // ── Buscar destinatario ──
+  let searchTimer = null;
+  function searchRecipient() {
+    const q = document.getElementById('searchUser').value;
+    document.getElementById('searchResult').classList.remove('show');
+    document.getElementById('transferBtn').disabled = true;
+    recipientEmail = null;
+    clearTimeout(searchTimer);
+    if (q.length < 2) return;
+    searchTimer = setTimeout(async () => {
+      try {
+        const res  = await fetch(`/api/transfer?token=${encodeURIComponent(session.token)}&query=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        if (data.ok) {
+          document.getElementById('resultAvatar').textContent = initials(data.user.name);
+          document.getElementById('resultName').textContent   = data.user.name;
+          document.getElementById('resultEmail').textContent  = data.user.email;
+          document.getElementById('searchResult').classList.add('show');
+          recipientEmail = data.user.email;
+          document.getElementById('transferBtn').disabled = false;
+        }
+      } catch(e) {}
+    }, 400);
+  }
+
+  // ── Ejecutar transacción ──
+  async function doTransaction(type) {
+    const amtId = { transfer:'transferAmt', deposit:'depositAmt', withdraw:'withdrawAmt' };
+    const descId= { transfer:'transferDesc',deposit:'depositDesc',withdraw:'withdrawDesc' };
+    const amt   = parseFloat(document.getElementById(amtId[type]).value);
+    const desc  = document.getElementById(descId[type]).value;
+
+    if (!amt || amt <= 0) { showToast('El monto debe ser mayor a 0', 'error'); return; }
+
+    const btns = document.querySelectorAll('.tx-form.show .btn');
+    btns.forEach(b => { b.classList.add('loading'); b.disabled = true; });
+
+    try {
+      const body = { token: session.token, type, amount: amt, description: desc };
+      if (type === 'transfer') body.toEmail = recipientEmail;
+
+      const res  = await fetch('/api/transfer', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        currentBalance = data.newBalance;
+        document.getElementById('balanceAmt').textContent =
+          currentBalance.toLocaleString('es', {minimumFractionDigits:2});
+        showToast(data.message);
+        // Limpiar formulario
+        document.getElementById(amtId[type]).value  = '';
+        document.getElementById(descId[type]).value = '';
+        if (type === 'transfer') {
+          document.getElementById('searchUser').value = '';
+          document.getElementById('searchResult').classList.remove('show');
+          recipientEmail = null;
+          document.getElementById('transferBtn').disabled = true;
+        }
+        // Recargar historial
+        setTimeout(loadWallet, 800);
+      } else {
+        showToast(data.error || 'Error en la transacción', 'error');
+      }
+    } catch(e) {
+      showToast('Error de conexión', 'error');
+    } finally {
+      btns.forEach(b => { b.classList.remove('loading'); b.disabled = false; });
+    }
+  }
+
+  loadWallet();
+</script>
+</body>
+</html>

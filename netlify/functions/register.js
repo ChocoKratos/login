@@ -16,83 +16,50 @@ const headers = {
 async function getData() {
   const res  = await fetch(BIN_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_KEY } });
   const json = await res.json();
+  console.log("getData response status:", res.status);
   return json.record || { posts: [], users: {} };
 }
 
 async function saveData(data) {
-  await fetch(BIN_URL, {
+  const res = await fetch(BIN_URL, {
     method: "PUT",
     headers: { "X-Master-Key": JSONBIN_KEY, "Content-Type": "application/json" },
     body: JSON.stringify(data)
   });
+  console.log("saveData response status:", res.status);
+  return res.status;
 }
 
-async function verifyCaptcha(token) {
-  if (!token) return false;
-  const res  = await fetch("https://hcaptcha.com/siteverify", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: `secret=${HCAPTCHA_SECRET}&response=${token}`
-  });
-  const data = await res.json();
-  return data.success === true;
-}
-
-// ── Validaciones ──────────────────────────────────────────────────────────
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function validateDate(dateStr) {
-  // Formato YYYY-MM-DD y que sea fecha real
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return false;
-  // Mayor de 18 años
   const today = new Date();
   const age   = today.getFullYear() - d.getFullYear();
   const m     = today.getMonth() - d.getMonth();
-  const ageOk = age > 18 || (age === 18 && (m > 0 || (m === 0 && today.getDate() >= d.getDate())));
-  return ageOk;
+  return age > 18 || (age === 18 && (m > 0 || (m === 0 && today.getDate() >= d.getDate())));
 }
 
 function validatePassword(pass) {
-  // Mínimo 8 chars, 1 mayúscula, 1 número, 1 especial
   return /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/.test(pass);
 }
 
 function validateCedula(cedula) {
-  // Formato cédula panameña
-  // Nacional:   X-XXX-XXXX  (provincia 1-9, tomo, asiento)
-  // Extranjero: E-XXX-XXXX
-  // Pasaporte:  PE-XX-XXXX
-  const nacional   = /^[1-9]-\d{1,4}-\d{1,6}$/;
-  const extranjero = /^E-\d{1,4}-\d{1,6}$/;
-  const pasaporte  = /^PE-\d{1,4}-\d{1,6}$/;
+  const nacional   = /^[1-9]-\d+-\d+$/;
+  const extranjero = /^E-\d+-\d+$/;
+  const pasaporte  = /^PE-\d+-\d+$/;
   return nacional.test(cedula) || extranjero.test(cedula) || pasaporte.test(cedula);
 }
 
-// ── Validar base64 de imagen (JPG/PNG máx 2MB) ───────────────────────────
-function validatePhoto(base64) {
-  if (!base64) return { ok: false, error: "Foto de perfil requerida." };
-  const isJpg = base64.startsWith("data:image/jpeg") || base64.startsWith("data:image/jpg");
-  const isPng = base64.startsWith("data:image/png");
-  if (!isJpg && !isPng) return { ok: false, error: "La foto debe ser JPG o PNG." };
-  // Calcular tamaño aproximado en bytes
+function validateFileSize(base64, maxMB) {
+  if (!base64) return false;
   const base64Data = base64.split(",")[1] || "";
   const sizeBytes  = Math.ceil(base64Data.length * 0.75);
-  if (sizeBytes > 2 * 1024 * 1024) return { ok: false, error: "La foto no puede superar 2MB." };
-  return { ok: true };
-}
-
-// ── Validar base64 de PDF (máx 5MB) ──────────────────────────────────────
-function validatePDF(base64) {
-  if (!base64) return { ok: false, error: "PDF de cédula requerido." };
-  if (!base64.startsWith("data:application/pdf")) return { ok: false, error: "El documento debe ser un PDF." };
-  const base64Data = base64.split(",")[1] || "";
-  const sizeBytes  = Math.ceil(base64Data.length * 0.75);
-  if (sizeBytes > 5 * 1024 * 1024) return { ok: false, error: "El PDF no puede superar 5MB." };
-  return { ok: true };
+  return sizeBytes <= maxMB * 1024 * 1024;
 }
 
 exports.handler = async (event) => {
@@ -103,21 +70,23 @@ exports.handler = async (event) => {
     const {
       firstName, lastName, email, birthDate,
       cedula, password, confirmPassword,
-      photo, cedulaPDF, captchaToken
+      photo, cedulaDoc, initialBalance
     } = JSON.parse(event.body || "{}");
 
-    // ── Validaciones de campos requeridos ──
-    if (!firstName || !lastName || !email || !birthDate || !cedula || !password || !confirmPassword || !captchaToken)
+    console.log("REGISTER attempt:", email);
+
+    // ── Validaciones ──
+    if (!firstName || !lastName || !email || !birthDate || !cedula || !password || !confirmPassword)
       return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Todos los campos son obligatorios." }) };
 
     if (!validateEmail(email))
       return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Formato de correo electrónico inválido." }) };
 
     if (!validateDate(birthDate))
-      return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Fecha de nacimiento inválida. Debes ser mayor de 18 años." }) };
+      return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Fecha inválida. Debes ser mayor de 18 años." }) };
 
-    if (!validateCedula(cedula))
-      return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Cédula inválida. Formato: 8-123-4567 (nacional) o E-123-4567 / PE-12-3456 (extranjero)." }) };
+    if (!validateCedula(cedula.toUpperCase()))
+      return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Cédula inválida. Ej: 8-123-4567 / E-123-456 / PE-12-3456" }) };
 
     if (!validatePassword(password))
       return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial." }) };
@@ -125,28 +94,31 @@ exports.handler = async (event) => {
     if (password !== confirmPassword)
       return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Las contraseñas no coinciden." }) };
 
-    // ── Validar archivos ──
-    const photoCheck = validatePhoto(photo);
-    if (!photoCheck.ok) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: photoCheck.error }) };
+    // ── Validar foto ──
+    if (!photo) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "La foto de perfil es requerida." }) };
+    const isImg = photo.startsWith("data:image/jpeg") || photo.startsWith("data:image/jpg") || photo.startsWith("data:image/png");
+    if (!isImg) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "La foto debe ser JPG o PNG." }) };
+    if (!validateFileSize(photo, 2)) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "La foto no puede superar 2MB." }) };
 
-    const pdfCheck = validatePDF(cedulaPDF);
-    if (!pdfCheck.ok) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: pdfCheck.error }) };
+    // ── Validar documento cédula (PDF o imagen) ──
+    if (!cedulaDoc) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "El documento de cédula es requerido." }) };
+    const isPDF = cedulaDoc.startsWith("data:application/pdf");
+    const isDocImg = cedulaDoc.startsWith("data:image/");
+    if (!isPDF && !isDocImg) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "El documento debe ser PDF o imagen." }) };
+    if (!validateFileSize(cedulaDoc, 5)) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "El documento no puede superar 5MB." }) };
 
-    // ── Verificar captcha ──
-    const captchaOk = await verifyCaptcha(captchaToken);
-    if (!captchaOk)
-      return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Captcha inválido." }) };
-
-    const key  = email.toLowerCase().trim();
+    // ── Leer datos ──
     const data = await getData();
     if (!data.users) data.users = {};
-    if (!data.posts)  data.posts = [];
+    if (!data.posts)  data.posts  = [];
+
+    const key = email.toLowerCase().trim();
 
     if (data.users[key])
       return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Este correo ya está registrado." }) };
 
-    // Verificar cédula única
-    const cedulaExists = Object.values(data.users).some(u => u.cedula === cedula);
+    const cedulaUpper = cedula.toUpperCase().trim();
+    const cedulaExists = Object.values(data.users).some(u => u.cedula === cedulaUpper);
     if (cedulaExists)
       return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Esta cédula ya está registrada." }) };
 
@@ -159,24 +131,28 @@ exports.handler = async (event) => {
     const qrDataURL = await QRCode.toDataURL(totp.toString());
 
     // ── Guardar usuario ──
+    const balance = Math.max(0, parseFloat(initialBalance) || 0);
+
     data.users[key] = {
       firstName:  firstName.trim(),
       lastName:   lastName.trim(),
       name:       `${firstName.trim()} ${lastName.trim()}`,
       email:      key,
       birthDate,
-      cedula,
+      cedula:     cedulaUpper,
       password,
-      photo,       // base64 JPG/PNG
-      cedulaPDF,   // base64 PDF
-      totpSecret:  secret.base32,
-      role:        "user",
-      balance:     0,
-      createdAt:   new Date().toISOString(),
-      updatedAt:   new Date().toISOString()
+      photo,
+      cedulaDoc,
+      totpSecret: secret.base32,
+      role:       "user",
+      balance,
+      transactions: [],
+      createdAt:  new Date().toISOString(),
+      updatedAt:  new Date().toISOString()
     };
 
-    await saveData(data);
+    const saveStatus = await saveData(data);
+    console.log("User saved:", key, "saveStatus:", saveStatus);
 
     return {
       statusCode: 200, headers,
@@ -184,7 +160,7 @@ exports.handler = async (event) => {
     };
 
   } catch(err) {
-    console.error("REGISTER error:", err.message);
+    console.error("REGISTER error:", err.message, err.stack);
     return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: "Error interno: " + err.message }) };
   }
 };
