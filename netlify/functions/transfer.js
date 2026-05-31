@@ -4,7 +4,7 @@ const crypto = require("crypto");
 const JSONBIN_KEY = process.env.JSONBIN_KEY;
 const JSONBIN_BIN = process.env.JSONBIN_BIN;
 const SECRET_KEY  = process.env.SECRET_KEY || "clave-secreta-hmac-2024";
-const BIN_URL     = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN}`;
+const BIN_URL     = "https://api.jsonbin.io/v3/b/" + JSONBIN_BIN;
 
 const headers = {
   "Access-Control-Allow-Origin":  "*",
@@ -19,11 +19,12 @@ async function getData() {
 }
 
 async function saveData(data) {
-  await fetch(BIN_URL, {
+  const res = await fetch(BIN_URL, {
     method: "PUT",
     headers: { "X-Master-Key": JSONBIN_KEY, "Content-Type": "application/json" },
     body: JSON.stringify(data)
   });
+  console.log("saveData status:", res.status);
 }
 
 function parseToken(token) {
@@ -33,13 +34,26 @@ function parseToken(token) {
 
 function signRecord(record) {
   const payload = JSON.stringify({
-    email: record.email, name: record.name,
-    role: record.role, balance: record.balance, updatedAt: record.updatedAt
+    email:     record.email,
+    name:      record.name,
+    role:      record.role,
+    balance:   record.balance,
+    updatedAt: record.updatedAt
   });
   return crypto.createHmac("sha256", SECRET_KEY).update(payload).digest("hex");
 }
 
-// Buscar usuario por email o nombre
+function verifySignature(record) {
+  if (!record.signature) return false;
+  const expected = signRecord(record);
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(record.signature, "hex"),
+      Buffer.from(expected, "hex")
+    );
+  } catch(e) { return false; }
+}
+
 function searchUser(users, query) {
   const q = query.toLowerCase().trim();
   return Object.values(users).find(u =>
@@ -51,14 +65,16 @@ function searchUser(users, query) {
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
 
-  // ── GET: buscar usuario destinatario ──
+  // ── GET: buscar destinatario ──
   if (event.httpMethod === "GET") {
-    const { token, query } = event.queryStringParameters || {};
-    const session = parseToken(token);
-    if (!session) return { statusCode: 401, headers, body: JSON.stringify({ ok: false, error: "Sesión inválida." }) };
-    if (!query || query.length < 2) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Ingresa al menos 2 caracteres." }) };
+    const params  = event.queryStringParameters || {};
+    const session = parseToken(params.token);
+    if (!session) return { statusCode: 401, headers, body: JSON.stringify({ ok: false, error: "Sesion invalida." }) };
 
-    const data = await getData();
+    const query = params.query || "";
+    if (query.length < 2) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Ingresa al menos 2 caracteres." }) };
+
+    const data  = await getData();
     const found = searchUser(data.users || {}, query);
 
     if (!found || found.email === session.email)
@@ -66,108 +82,101 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200, headers,
-      body: JSON.stringify({ ok: true, user: { name: found.name, email: found.email, role: found.role } })
+      body: JSON.stringify({ ok: true, user: { name: found.name, email: found.email } })
     };
   }
 
-  // ── POST: ejecutar transacción ──
+  // ── POST: ejecutar transaccion ──
   if (event.httpMethod === "POST") {
     try {
-      const { token, type, amount, toEmail, description } = JSON.parse(event.body || "{}");
+      const body = JSON.parse(event.body || "{}");
+      const { token, type, amount, toEmail, description } = body;
+
+      console.log("TRANSFER type:", type, "amount:", amount);
 
       const session = parseToken(token);
-      if (!session) return { statusCode: 401, headers, body: JSON.stringify({ ok: false, error: "Sesión inválida." }) };
+      if (!session) return { statusCode: 401, headers, body: JSON.stringify({ ok: false, error: "Sesion invalida." }) };
 
       const amt = parseFloat(amount);
-      if (!amt || amt <= 0) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "El monto debe ser mayor a 0." }) };
-      if (!["transfer","deposit","withdraw"].includes(type))
-        return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Tipo de transacción inválido." }) };
+      if (!amt || amt <= 0)
+        return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "El monto debe ser mayor a 0." }) };
+
+      if (!["transfer", "deposit", "withdraw"].includes(type))
+        return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Tipo invalido." }) };
 
       const data = await getData();
       if (!data.users) data.users = {};
 
       const fromUser = data.users[session.email];
-      if (!fromUser) return { statusCode: 404, headers, body: JSON.stringify({ ok: false, error: "Usuario no encontrado." }) };
+      if (!fromUser)
+        return { statusCode: 404, headers, body: JSON.stringify({ ok: false, error: "Usuario no encontrado." }) };
 
-      // ── Verificar firma para transferencias ──
+      // ── Firma requerida para transferencias ──
       if (type === "transfer") {
         if (!fromUser.signature) {
           return { statusCode: 403, headers, body: JSON.stringify({
             ok: false,
-            error: "Necesitas crear tu firma digital antes de transferir.",
-            requiresSignature: true
+            requiresSignature: true,
+            error: "Necesitas crear tu firma digital en el Lab 2 antes de transferir."
           })};
         }
-        // Verificar que la firma sea válida (no alterada)
-        const crypto = require("crypto");
-        const SECRET_KEY = process.env.SECRET_KEY || "clave-secreta-hmac-2024";
-        const payload = JSON.stringify({
-          email: fromUser.email, name: fromUser.name,
-          role: fromUser.role, balance: fromUser.balance, updatedAt: fromUser.updatedAt
-        });
-        const expectedSig = crypto.createHmac("sha256", SECRET_KEY).update(payload).digest("hex");
-        let sigValid = false;
-        try {
-          sigValid = crypto.timingSafeEqual(
-            Buffer.from(fromUser.signature, "hex"),
-            Buffer.from(expectedSig, "hex")
-          );
-        } catch(e) { sigValid = false; }
-
-        if (!sigValid) {
+        if (!verifySignature(fromUser)) {
           return { statusCode: 403, headers, body: JSON.stringify({
             ok: false,
-            error: "Tu firma digital es inválida. Ve al Lab 2 y regenera tu firma.",
-            requiresSignature: true
+            requiresSignature: true,
+            error: "Tu firma es invalida. Ve al Lab 2 y regenera tu firma."
           })};
         }
       }
 
-      const now = new Date().toISOString();
-      const txId = \`TX-\${Date.now()}\`;
+      const now  = new Date().toISOString();
+      const txId = "TX-" + Date.now();
 
       if (type === "transfer") {
-        if (!toEmail) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Destinatario requerido." }) };
-        const toUser = data.users[toEmail.toLowerCase()];
-        if (!toUser) return { statusCode: 404, headers, body: JSON.stringify({ ok: false, error: "Usuario destinatario no encontrado." }) };
-        if (toUser.email === session.email) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "No puedes transferirte a ti mismo." }) };
-        if (fromUser.balance < amt) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: `Saldo insuficiente. Disponible: $${fromUser.balance.toFixed(2)}` }) };
+        if (!toEmail)
+          return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Destinatario requerido." }) };
 
-        // Ejecutar transferencia
-        fromUser.balance  = parseFloat((fromUser.balance - amt).toFixed(2));
-        toUser.balance    = parseFloat((toUser.balance   + amt).toFixed(2));
+        const toUser = data.users[toEmail.toLowerCase()];
+        if (!toUser)
+          return { statusCode: 404, headers, body: JSON.stringify({ ok: false, error: "Destinatario no encontrado." }) };
+        if (toUser.email === session.email)
+          return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "No puedes transferirte a ti mismo." }) };
+        if (fromUser.balance < amt)
+          return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Saldo insuficiente. Disponible: $" + fromUser.balance.toFixed(2) }) };
+
+        fromUser.balance   = parseFloat((fromUser.balance - amt).toFixed(2));
+        toUser.balance     = parseFloat((toUser.balance   + amt).toFixed(2));
         fromUser.updatedAt = now;
         toUser.updatedAt   = now;
 
-        // Registrar transacciones
         if (!fromUser.transactions) fromUser.transactions = [];
         if (!toUser.transactions)   toUser.transactions   = [];
 
         fromUser.transactions.unshift({ id: txId, type: "transfer_out", amount: amt, to: toUser.email, toName: toUser.name, description: description || "", date: now });
         toUser.transactions.unshift({   id: txId, type: "transfer_in",  amount: amt, from: session.email, fromName: fromUser.name, description: description || "", date: now });
 
-        // Mantener máximo 50 transacciones por usuario
         if (fromUser.transactions.length > 50) fromUser.transactions = fromUser.transactions.slice(0, 50);
         if (toUser.transactions.length   > 50) toUser.transactions   = toUser.transactions.slice(0, 50);
 
-        // Firmar ambos registros
         fromUser.signature = signRecord(fromUser);
         toUser.signature   = signRecord(toUser);
 
-        data.users[session.email]    = fromUser;
-        data.users[toUser.email]     = toUser;
+        data.users[session.email] = fromUser;
+        data.users[toUser.email]  = toUser;
 
       } else if (type === "deposit") {
         fromUser.balance = parseFloat((fromUser.balance + amt).toFixed(2));
         fromUser.updatedAt = now;
         if (!fromUser.transactions) fromUser.transactions = [];
-        fromUser.transactions.unshift({ id: txId, type: "deposit", amount: amt, description: description || "Depósito propio", date: now });
+        fromUser.transactions.unshift({ id: txId, type: "deposit", amount: amt, description: description || "Deposito propio", date: now });
         if (fromUser.transactions.length > 50) fromUser.transactions = fromUser.transactions.slice(0, 50);
         fromUser.signature = signRecord(fromUser);
         data.users[session.email] = fromUser;
 
       } else if (type === "withdraw") {
-        if (fromUser.balance < amt) return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: `Saldo insuficiente. Disponible: $${fromUser.balance.toFixed(2)}` }) };
+        if (fromUser.balance < amt)
+          return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Saldo insuficiente. Disponible: $" + fromUser.balance.toFixed(2) }) };
+
         fromUser.balance = parseFloat((fromUser.balance - amt).toFixed(2));
         fromUser.updatedAt = now;
         if (!fromUser.transactions) fromUser.transactions = [];
@@ -182,19 +191,19 @@ exports.handler = async (event) => {
       return {
         statusCode: 200, headers,
         body: JSON.stringify({
-          ok: true,
+          ok:         true,
           txId,
           newBalance: fromUser.balance,
           type,
-          amount: amt,
-          message: type === "transfer" ? `Transferencia de $${amt.toFixed(2)} completada` :
-                   type === "deposit"  ? `Depósito de $${amt.toFixed(2)} completado` :
-                                         `Retiro de $${amt.toFixed(2)} completado`
+          amount:     amt,
+          message:    type === "transfer" ? "Transferencia de $" + amt.toFixed(2) + " completada" :
+                      type === "deposit"  ? "Deposito de $"      + amt.toFixed(2) + " completado" :
+                                            "Retiro de $"        + amt.toFixed(2) + " completado"
         })
       };
 
     } catch(err) {
-      console.error("TRANSFER error:", err.message);
+      console.error("TRANSFER error:", err.message, err.stack);
       return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: "Error interno: " + err.message }) };
     }
   }
