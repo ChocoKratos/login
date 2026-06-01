@@ -7,71 +7,42 @@
   <link rel="stylesheet" href="style.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
   <style>
-    .stepper { display:flex; align-items:center; margin-bottom:2rem; }
-    .step { display:flex; align-items:center; gap:8px; flex:1; }
-    .step-circle {
-      width:28px; height:28px; border-radius:50%;
-      background:var(--input-bg); border:1.5px solid var(--border);
-      display:flex; align-items:center; justify-content:center;
-      font-size:12px; font-weight:500; color:var(--text-3); flex-shrink:0;
-      transition:all var(--t);
-    }
-    .step.active .step-circle { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 0 12px var(--accent-glow); }
-    .step.done   .step-circle { background:var(--green);  border-color:var(--green);  color:#fff; }
-    .step-label { font-size:11px; color:var(--text-3); font-weight:500; text-transform:uppercase; letter-spacing:.4px; }
-    .step.active .step-label { color:var(--text-1); }
-    .step-line { flex:1; height:.5px; background:var(--border); margin:0 6px; max-width:28px; }
-
-    .step-panel { display:none; animation:fadeUp .3s ease; }
-    .step-panel.active { display:block; }
-
-    .upload-box {
-      border:1.5px dashed var(--border); border-radius:var(--r);
-      padding:1.25rem; text-align:center; cursor:pointer; position:relative;
-      transition:border-color var(--t), background var(--t);
-    }
-    .upload-box:hover { border-color:var(--accent); background:var(--accent-soft); }
-    .upload-box.has-file { border-color:var(--green); border-style:solid; background:var(--green-bg); }
-    .upload-box input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
-    .upload-icon { font-size:26px; color:var(--text-3); display:block; margin-bottom:5px; }
-    .upload-box.has-file .upload-icon { color:var(--green); }
-    .upload-label { font-size:13px; color:var(--text-3); font-weight:300; }
-    .upload-box.has-file .upload-label { color:var(--green); font-weight:500; }
-    .upload-hint { font-size:11px; color:var(--text-4); margin-top:3px; }
-
-    .photo-preview { width:72px; height:72px; border-radius:50%; object-fit:cover; border:2px solid var(--green); display:none; margin:0 auto 8px; }
-
-    .pw-bar { height:3px; border-radius:2px; background:var(--input-bg); margin:6px 0 4px; overflow:hidden; }
-    .pw-bar-fill { height:100%; border-radius:2px; width:0%; transition:width .3s, background .3s; }
-    .pw-rules { display:grid; grid-template-columns:1fr 1fr; gap:3px; }
-    .pw-rule { font-size:11px; color:var(--text-4); display:flex; align-items:center; gap:4px; }
-    .pw-rule.ok { color:var(--green); }
-
-    .field-error { font-size:11px; color:var(--red); margin-top:4px; display:none; }
-    .field-error.show { display:block; }
-    input.err { border-color:var(--red-border) !important; }
-    input.ok  { border-color:var(--green-border) !important; }
-
-    .btn-back {
-      background:var(--card-2); color:var(--text-2);
-      box-shadow:none; border:.5px solid var(--border);
-    }
-    .btn-back:hover { background:#1f1f1f !important; }
-
-    .modal-overlay {
-      display:none; position:fixed; inset:0;
-      background:rgba(0,0,0,.8); z-index:999;
-      align-items:center; justify-content:center; padding:1rem;
-    }
-    .modal-overlay.show { display:flex; }
-
-    /* Balance input */
-    .balance-input-wrap { position:relative; }
-    .balance-prefix {
-      position:absolute; left:14px; top:50%; transform:translateY(-50%);
-      font-size:14px; color:var(--text-3); pointer-events:none;
-    }
-    .balance-input-wrap input { padding-left:28px !important; }
+    .stepper{display:flex;align-items:center;margin-bottom:2rem}
+    .step{display:flex;align-items:center;gap:8px;flex:1}
+    .step-circle{width:28px;height:28px;border-radius:50%;background:var(--input-bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--text-3);flex-shrink:0;transition:all var(--t)}
+    .step.active .step-circle{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 12px var(--accent-glow)}
+    .step.done   .step-circle{background:var(--green);border-color:var(--green);color:#fff}
+    .step-label{font-size:11px;color:var(--text-3);font-weight:500;text-transform:uppercase;letter-spacing:.4px}
+    .step.active .step-label{color:var(--text-1)}
+    .step-line{flex:1;height:.5px;background:var(--border);margin:0 6px;max-width:28px}
+    .step-panel{display:none;animation:fadeUp .3s ease}
+    .step-panel.active{display:block}
+    .upload-box{border:1.5px dashed var(--border);border-radius:var(--r);padding:1.25rem;text-align:center;cursor:pointer;position:relative;transition:border-color var(--t),background var(--t)}
+    .upload-box:hover{border-color:var(--accent);background:var(--accent-soft)}
+    .upload-box.has-file{border-color:var(--green);border-style:solid;background:var(--green-bg)}
+    .upload-box input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .upload-icon{font-size:26px;color:var(--text-3);display:block;margin-bottom:5px}
+    .upload-box.has-file .upload-icon{color:var(--green)}
+    .upload-label{font-size:13px;color:var(--text-3);font-weight:300}
+    .upload-box.has-file .upload-label{color:var(--green);font-weight:500}
+    .upload-hint{font-size:11px;color:var(--text-4);margin-top:3px}
+    .photo-preview{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--green);display:none;margin:0 auto 8px}
+    .pw-bar{height:3px;border-radius:2px;background:var(--input-bg);margin:6px 0 4px;overflow:hidden}
+    .pw-bar-fill{height:100%;border-radius:2px;width:0%;transition:width .3s,background .3s}
+    .pw-rules{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+    .pw-rule{font-size:11px;color:var(--text-4);display:flex;align-items:center;gap:4px}
+    .pw-rule.ok{color:var(--green)}
+    .field-error{font-size:11px;color:var(--red);margin-top:4px;display:none}
+    .field-error.show{display:block}
+    input.err{border-color:var(--red-border)!important}
+    input.ok{border-color:var(--green-border)!important}
+    .btn-back{background:var(--card-2);color:var(--text-2);box-shadow:none;border:.5px solid var(--border)}
+    .btn-back:hover{background:#1f1f1f!important}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999;align-items:center;justify-content:center;padding:1rem}
+    .modal-overlay.show{display:flex}
+    .phone-wrap{position:relative}
+    .phone-flag{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none}
+    .phone-wrap input{padding-left:42px!important}
   </style>
 </head>
 <body>
@@ -84,7 +55,6 @@
   <h2>Registro de usuario</h2>
   <p class="sub">Completa los 3 pasos para crear tu cuenta</p>
 
-  <!-- Stepper -->
   <div class="stepper">
     <div class="step active" id="s1"><div class="step-circle">1</div><span class="step-label">Datos</span></div>
     <div class="step-line"></div>
@@ -95,7 +65,7 @@
 
   <div id="alertBox" class="alert"><i class="ti ti-alert-circle"></i><span id="alertMsg"></span></div>
 
-  <!-- ── PASO 1 ── -->
+  <!-- ── PASO 1: Datos personales ── -->
   <div class="step-panel active" id="panel1">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
       <div class="field">
@@ -110,6 +80,19 @@
       </div>
     </div>
 
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+      <div class="field">
+        <label>Fecha de nacimiento</label>
+        <input type="date" id="birthDate" oninput="liveValidate(this,'date')" style="color-scheme:dark"/>
+        <span class="field-error" id="err-birthDate"></span>
+      </div>
+      <div class="field">
+        <label>Edad</label>
+        <input type="text" id="ageDisplay" placeholder="—" readonly
+               style="background:var(--input-bg);color:var(--accent);font-weight:500;cursor:default"/>
+      </div>
+    </div>
+
     <div class="field">
       <label>Correo electrónico</label>
       <input type="email" id="email" placeholder="tu@correo.com" oninput="liveValidate(this,'email')"/>
@@ -117,24 +100,24 @@
     </div>
 
     <div class="field">
-      <label>Fecha de nacimiento <span class="label-note">(mayor de 18 años)</span></label>
-      <input type="date" id="birthDate" oninput="liveValidate(this,'date')" style="color-scheme:dark"/>
-      <span class="field-error" id="err-birthDate"></span>
+      <label>Teléfono</label>
+      <div class="phone-wrap">
+        <span class="phone-flag">🇵🇦</span>
+        <input type="tel" id="phone" placeholder="+507 6000-0000" oninput="liveValidate(this,'phone')"/>
+      </div>
+      <span class="field-error" id="err-phone"></span>
     </div>
 
     <div class="field">
       <label>Cédula panameña</label>
       <div style="display:flex;gap:.5rem;margin-bottom:6px">
         <select id="cedulaType" onchange="resetCedula()"
-                style="padding:11px 10px;font-size:13px;font-family:var(--font);
-                color:var(--text-1);background:var(--input-bg);border:1px solid var(--border);
-                border-radius:var(--r);outline:none;flex-shrink:0;cursor:pointer">
+                style="padding:11px 10px;font-size:13px;font-family:var(--font);color:var(--text-1);background:var(--input-bg);border:1px solid var(--border);border-radius:var(--r);outline:none;flex-shrink:0;cursor:pointer">
           <option value="nacional">Nacional</option>
           <option value="extranjero">Extranjero (E-)</option>
           <option value="pasaporte">Pasaporte (PE-)</option>
         </select>
-        <input type="text" id="cedula" placeholder="8-123-4567"
-               oninput="maskCedula(this)" style="flex:1"/>
+        <input type="text" id="cedula" placeholder="8-123-4567" oninput="maskCedula(this)" style="flex:1"/>
       </div>
       <span style="font-size:11px;color:var(--text-4)">
         Nacional: <code style="color:var(--accent)">8-123-4567</code> &nbsp;|&nbsp;
@@ -145,11 +128,10 @@
     </div>
 
     <div class="field">
-      <label>Balance inicial <span class="label-note">(cuánto dinero tienes)</span></label>
-      <div class="balance-input-wrap">
-        <span class="balance-prefix">$</span>
-        <input type="number" id="initialBalance" placeholder="0.00" min="0" step="0.01"
-               style="font-family:var(--font)" value="0"/>
+      <label>Balance inicial <span class="label-note">(USD)</span></label>
+      <div style="position:relative">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:14px">$</span>
+        <input type="number" id="initialBalance" placeholder="0.00" min="0" step="0.01" value="0" style="padding-left:28px"/>
       </div>
     </div>
 
@@ -158,7 +140,7 @@
     </button>
   </div>
 
-  <!-- ── PASO 2 ── -->
+  <!-- ── PASO 2: Contraseña ── -->
   <div class="step-panel" id="panel2">
     <div class="field">
       <label>Contraseña</label>
@@ -174,7 +156,6 @@
         <span class="pw-rule" id="r-special"><i class="ti ti-x"></i> Un especial</span>
       </div>
     </div>
-
     <div class="field" style="margin-top:.75rem">
       <label>Verificar contraseña</label>
       <div class="pw-wrap">
@@ -183,17 +164,14 @@
       </div>
       <span class="field-error" id="err-confirm"></span>
     </div>
-
     <div style="display:flex;gap:.75rem;margin-top:.75rem">
       <button class="btn btn-back" onclick="goStep(1)"><span class="btn-text"><i class="ti ti-arrow-left"></i> Atrás</span></button>
       <button class="btn" id="step2Btn" onclick="goStep(3)" disabled><span class="btn-text">Continuar <i class="ti ti-arrow-right"></i></span></button>
     </div>
   </div>
 
-  <!-- ── PASO 3 ── -->
+  <!-- ── PASO 3: Archivos ── -->
   <div class="step-panel" id="panel3">
-
-    <!-- Foto -->
     <div class="field">
       <label>Foto de perfil <span class="label-note">(JPG/PNG máx 2MB)</span></label>
       <div class="upload-box" id="photoBox">
@@ -206,13 +184,12 @@
       <span class="field-error" id="err-photo"></span>
     </div>
 
-    <!-- Documento cédula (PDF o imagen) -->
     <div class="field">
-      <label>Documento de cédula <span class="label-note">(PDF o imagen, máx 5MB)</span></label>
+      <label>Imagen o PDF de cédula <span class="label-note">(máx 5MB)</span></label>
       <div class="upload-box" id="docBox">
         <input type="file" id="docFile" accept="application/pdf,image/*" onchange="handleDoc(this)"/>
         <i class="ti ti-file upload-icon" id="docIcon"></i>
-        <div class="upload-label" id="docLabel">Haz clic para subir PDF o imagen</div>
+        <div class="upload-label" id="docLabel">Haz clic para subir</div>
         <div class="upload-hint">PDF o imagen · máx 5MB</div>
       </div>
       <span class="field-error" id="err-doc"></span>
@@ -268,6 +245,18 @@
   }
   function hideAlert() { document.getElementById('alertBox').className = 'alert'; }
 
+  // ── Auto-calcular edad ──
+  document.getElementById('birthDate').addEventListener('input', function() {
+    liveValidate(this, 'date');
+    const d = new Date(this.value);
+    if (!isNaN(d.getTime())) {
+      const age = Math.floor((Date.now() - d) / (365.25 * 24 * 3600 * 1000));
+      document.getElementById('ageDisplay').value = age >= 0 ? age + ' años' : '—';
+    } else {
+      document.getElementById('ageDisplay').value = '—';
+    }
+  });
+
   // ── Stepper ──
   function goStep(n) {
     hideAlert();
@@ -281,13 +270,15 @@
     }
   }
 
-  // ── Validación paso 1 ──
+  // ── Validación ──
   function liveValidate(input, type) {
     const errEl = document.getElementById('err-' + input.id);
+    if (!errEl) return;
     const v = input.value.trim();
     let msg = '';
     if (type === 'name'  && v.length < 2) msg = 'Mínimo 2 caracteres.';
     if (type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) msg = 'Correo inválido.';
+    if (type === 'phone' && !/^[+]?[\d\s\-()\+]{7,20}$/.test(v)) msg = 'Teléfono inválido.';
     if (type === 'date') {
       if (!v) { msg = 'Requerido.'; }
       else {
@@ -296,85 +287,80 @@
       }
     }
     if (msg) { input.className='err'; errEl.textContent=msg; errEl.classList.add('show'); }
-    else     { input.className='ok'; errEl.classList.remove('show'); }
+    else     { input.className='ok';  errEl.classList.remove('show'); }
+  }
+
+  function isCedulaValid(v) {
+    return /^[1-9]-\d+-\d+$/.test(v) || /^E-\d+-\d+$/.test(v) || /^PE-\d+-\d+$/.test(v);
   }
 
   function validateStep1() {
-    const fields = [['firstName','name'],['lastName','name'],['email','email'],['birthDate','date']];
+    const checks = [
+      ['firstName','name'], ['lastName','name'],
+      ['email','email'], ['birthDate','date'], ['phone','phone']
+    ];
     let ok = true;
-    fields.forEach(([id, type]) => {
+    checks.forEach(([id, type]) => {
       const el = document.getElementById(id);
       liveValidate(el, type);
       if (!el.classList.contains('ok')) ok = false;
     });
-    // Cédula
     const ced = document.getElementById('cedula');
     if (!isCedulaValid(ced.value)) {
       ced.className = 'err';
-      document.getElementById('err-cedula').textContent = 'Formato de cédula inválido.';
-      document.getElementById('err-cedula').classList.add('show');
+      const e = document.getElementById('err-cedula');
+      e.textContent = 'Formato inválido.'; e.classList.add('show');
       ok = false;
     }
     if (!ok) showAlert('Corrige los errores antes de continuar.');
     return ok;
   }
 
-  // ── Cédula panameña ──
-  function isCedulaValid(v) {
-    const nacional   = /^[1-9]-\d+-\d+$/;
-    const extranjero = /^E-\d+-\d+$/;
-    const pasaporte  = /^PE-\d+-\d+$/;
-    return nacional.test(v) || extranjero.test(v) || pasaporte.test(v);
-  }
-
+  // ── Cédula ──
   function resetCedula() {
     const input = document.getElementById('cedula');
     const type  = document.getElementById('cedulaType').value;
-    const ph    = { nacional:'8-123-4567', extranjero:'E-123-456', pasaporte:'PE-12-3456' };
-    input.placeholder = ph[type];
-    input.value = '';
-    input.className = '';
+    const ph = { nacional:'8-123-4567', extranjero:'E-123-456', pasaporte:'PE-12-3456' };
+    input.placeholder = ph[type]; input.value = ''; input.className = '';
     document.getElementById('err-cedula').classList.remove('show');
   }
 
   function maskCedula(input) {
     const type = document.getElementById('cedulaType').value;
     let v = input.value.toUpperCase();
-
     if (type === 'nacional') {
-      // Auto-insertar guiones: X-XXXX-XXXXXX
-      let digits = v.replace(/\D/g, '');
-      if (digits.length > 1)  v = digits[0] + '-' + digits.slice(1);
-      else                    v = digits;
-      digits = v.replace(/[^\d-]/g, '');
-      const parts = digits.split('-');
-      if (parts.length >= 2 && parts[1].length > 4) {
-        v = parts[0] + '-' + parts[1].slice(0,4) + '-' + parts[1].slice(4) + (parts[2] || '');
-      }
-    } else if (type === 'extranjero') {
-      if (!v.startsWith('E-')) v = 'E-' + v.replace(/^[E\-]*/,'');
-    } else if (type === 'pasaporte') {
-      if (!v.startsWith('PE-')) v = 'PE-' + v.replace(/^[PE\-]*/,'');
+      let d = v.replace(/\D/g,'');
+      if (d.length > 1) v = d[0] + '-' + d.slice(1);
+      else v = d;
+      const parts = v.split('-');
+      if (parts.length >= 2 && parts[1] && parts[1].length > 4)
+        v = parts[0] + '-' + parts[1].slice(0,4) + '-' + parts[1].slice(4) + (parts[2]||'');
+    } else if (type === 'extranjero' && !v.startsWith('E-')) {
+      v = 'E-' + v.replace(/^[E\-]*/,'');
+    } else if (type === 'pasaporte' && !v.startsWith('PE-')) {
+      v = 'PE-' + v.replace(/^[PE\-]*/,'');
     }
-
     input.value = v;
     const errEl = document.getElementById('err-cedula');
     if (isCedulaValid(v)) { input.className='ok'; errEl.classList.remove('show'); }
-    else                  { input.className=''; errEl.classList.remove('show'); }
+    else { input.className=''; errEl.classList.remove('show'); }
   }
 
   // ── Contraseña ──
   function checkPassword() {
     const v = document.getElementById('password').value;
-    const rules = { len: v.length>=8, upper:/[A-Z]/.test(v), num:/\d/.test(v), special:/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v) };
+    const rules = {
+      len: v.length>=8, upper:/[A-Z]/.test(v),
+      num:/\d/.test(v), special:/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v)
+    };
     Object.entries(rules).forEach(([k,ok]) => {
       const el = document.getElementById('r-'+k);
-      el.classList.toggle('ok', ok);
+      el.classList.toggle('ok',ok);
       el.querySelector('i').className = ok ? 'ti ti-check' : 'ti ti-x';
     });
     const score = Object.values(rules).filter(Boolean).length;
-    const fill  = document.getElementById('pwFill');
-    fill.style.width      = (score*25)+'%';
+    const fill = document.getElementById('pwFill');
+    fill.style.width = (score*25)+'%';
     fill.style.background = ['','#EF4444','#F97316','#EAB308','#22C55E'][score];
     pwValid = score === 4;
     document.getElementById('step2Btn').disabled = !pwValid;
@@ -384,8 +370,8 @@
   function checkConfirm() {
     const pw=document.getElementById('password').value, pw2=document.getElementById('confirmPassword').value;
     const err=document.getElementById('err-confirm'), inp=document.getElementById('confirmPassword');
-    if (pw2 && pw!==pw2) { err.textContent='Las contraseñas no coinciden.'; err.classList.add('show'); inp.className='err'; }
-    else if (pw2)        { err.classList.remove('show'); inp.className='ok'; }
+    if (pw2 && pw!==pw2) { err.textContent='No coinciden.'; err.classList.add('show'); inp.className='err'; }
+    else if (pw2) { err.classList.remove('show'); inp.className='ok'; }
   }
 
   function validateStep2() {
@@ -399,18 +385,17 @@
   function handlePhoto(input) {
     const file=input.files[0], err=document.getElementById('err-photo'), box=document.getElementById('photoBox');
     if (!file) return;
-    if (!['image/jpeg','image/jpg','image/png'].includes(file.type)) { err.textContent='Solo JPG o PNG.'; err.classList.add('show'); return; }
+    if (!['image/jpeg','image/jpg','image/png'].includes(file.type)) { err.textContent='Solo JPG/PNG.'; err.classList.add('show'); return; }
     if (file.size > 2*1024*1024) { err.textContent='Máximo 2MB.'; err.classList.add('show'); return; }
     err.classList.remove('show');
     const reader = new FileReader();
     reader.onload = e => {
       photoB64 = e.target.result;
       const prev = document.getElementById('photoPreview');
-      prev.src = photoB64; prev.style.display = 'block';
-      document.getElementById('photoIcon').style.display = 'none';
-      document.getElementById('photoLabel').textContent  = '✓ ' + file.name;
-      box.classList.add('has-file');
-      checkStep3();
+      prev.src = photoB64; prev.style.display='block';
+      document.getElementById('photoIcon').style.display='none';
+      document.getElementById('photoLabel').textContent='✓ '+file.name;
+      box.classList.add('has-file'); checkStep3();
     };
     reader.readAsDataURL(file);
   }
@@ -418,17 +403,16 @@
   function handleDoc(input) {
     const file=input.files[0], err=document.getElementById('err-doc'), box=document.getElementById('docBox');
     if (!file) return;
-    const allowed = ['application/pdf','image/jpeg','image/jpg','image/png','image/webp'];
+    const allowed=['application/pdf','image/jpeg','image/jpg','image/png','image/webp'];
     if (!allowed.includes(file.type)) { err.textContent='Solo PDF o imagen.'; err.classList.add('show'); return; }
     if (file.size > 5*1024*1024) { err.textContent='Máximo 5MB.'; err.classList.add('show'); return; }
     err.classList.remove('show');
     const reader = new FileReader();
     reader.onload = e => {
       docB64 = e.target.result;
-      document.getElementById('docLabel').textContent = '✓ ' + file.name;
-      document.getElementById('docIcon').className   = 'ti ti-circle-check upload-icon';
-      box.classList.add('has-file');
-      checkStep3();
+      document.getElementById('docLabel').textContent='✓ '+file.name;
+      document.getElementById('docIcon').className='ti ti-circle-check upload-icon';
+      box.classList.add('has-file'); checkStep3();
     };
     reader.readAsDataURL(file);
   }
@@ -445,24 +429,19 @@
     btn.classList.add('loading'); btn.disabled = true;
 
     try {
-      // Guardar fotos en localStorage (no van al servidor para no superar límite JSONBin)
-      if (photoB64) {
-        try { localStorage.setItem('photo_' + email, photoB64); }
-        catch(e) { console.warn('localStorage lleno, foto no guardada localmente'); }
-      }
-      if (docB64) {
-        try { localStorage.setItem('doc_' + email, docB64); }
-        catch(e) { console.warn('localStorage lleno, doc no guardado localmente'); }
-      }
+      // Guardar fotos en localStorage
+      if (photoB64) { try { localStorage.setItem('photo_' + email, photoB64); } catch(e) {} }
+      if (docB64)   { try { localStorage.setItem('doc_'   + email, docB64);   } catch(e) {} }
 
       const res = await fetch('/api/register', {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           firstName:       document.getElementById('firstName').value.trim(),
           lastName:        document.getElementById('lastName').value.trim(),
           email,
           birthDate:       document.getElementById('birthDate').value,
+          phone:           document.getElementById('phone').value.trim(),
           cedula:          document.getElementById('cedula').value.trim().toUpperCase(),
           password:        document.getElementById('password').value,
           confirmPassword: document.getElementById('confirmPassword').value,
@@ -475,8 +454,8 @@
       const data = await res.json();
 
       if (data.ok) {
-        document.getElementById('qrImg').src             = data.qr;
-        document.getElementById('qrSecret').textContent  = data.secret;
+        document.getElementById('qrImg').src            = data.qr;
+        document.getElementById('qrSecret').textContent = data.secret;
         document.getElementById('qrModal').classList.add('show');
       } else {
         showAlert(data.error || 'Error al registrarse.');
