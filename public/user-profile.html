@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
   <style>
     body { display:block; padding:0; }
+
     .topbar {
       position:sticky; top:0; z-index:100;
       background:rgba(10,10,10,0.88); backdrop-filter:blur(14px);
@@ -25,7 +26,7 @@
 
     .page-wrap { max-width:680px; margin:0 auto; padding:2rem 1.5rem 4rem; }
 
-    /* ── Profile header card ── */
+    /* ── Profile header ── */
     .profile-header {
       background:linear-gradient(135deg,#1a0a2e 0%,#0d0d1a 100%);
       border:.5px solid rgba(139,92,246,0.3);
@@ -40,72 +41,60 @@
       top:-50px; right:-30px; pointer-events:none;
     }
 
-    /* ── Grid layout matching sketch ── */
+    /* ── 3-column grid matching sketch ── */
     .profile-grid {
       display:grid;
-      grid-template-columns:1fr auto 1fr;
-      grid-template-rows:auto auto auto;
+      grid-template-columns:1fr 120px 1fr;
       gap:1rem;
       align-items:start;
     }
-
-    /* Left column */
-    .col-left  { grid-column:1; display:flex; flex-direction:column; gap:.75rem; }
-    /* Center column (foto) */
-    .col-center { grid-column:2; display:flex; flex-direction:column; align-items:center; gap:.5rem; padding:0 .5rem; }
-    /* Right column */
-    .col-right { grid-column:3; display:flex; flex-direction:column; gap:.75rem; }
+    .col-left   { display:flex; flex-direction:column; gap:.85rem; }
+    .col-center { display:flex; flex-direction:column; align-items:center; gap:.5rem; }
+    .col-right  { display:flex; flex-direction:column; gap:.85rem; }
 
     /* Photo */
     .profile-photo-wrap {
-      width:110px; height:110px; border-radius:50%;
+      width:100px; height:100px; border-radius:50%;
       border:2.5px solid var(--accent);
       box-shadow:0 0 20px var(--accent-glow);
-      overflow:hidden; flex-shrink:0;
-      background:var(--input-bg);
+      overflow:hidden; background:var(--input-bg);
       display:flex; align-items:center; justify-content:center;
     }
-    .profile-photo-wrap img { width:100%; height:100%; object-fit:cover; }
-    .profile-photo-placeholder { font-size:36px; font-weight:500; color:var(--accent); }
+    .profile-photo-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+    .photo-initial { font-size:34px; font-weight:500; color:var(--accent); }
+    .photo-label   { font-size:10px; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; font-weight:500; }
 
-    .photo-label { font-size:11px; color:var(--text-3); text-align:center; font-weight:500; text-transform:uppercase; letter-spacing:.5px; }
-
-    /* Age badge */
     .age-badge {
       background:var(--accent-soft); color:var(--accent);
       border:.5px solid rgba(139,92,246,0.3);
-      border-radius:20px; padding:4px 14px;
-      font-size:13px; font-weight:500;
-      text-align:center; white-space:nowrap;
+      border-radius:20px; padding:4px 12px;
+      font-size:13px; font-weight:500; text-align:center;
     }
 
     /* Info items */
     .info-item { display:flex; flex-direction:column; gap:3px; }
-    .info-label {
-      font-size:10px; font-weight:500; color:var(--text-3);
-      text-transform:uppercase; letter-spacing:.6px;
-    }
-    .info-value {
-      font-size:14px; color:var(--text-1); font-weight:400;
-      line-height:1.3; word-break:break-all;
-    }
-    .info-value.accent { color:var(--accent); font-weight:500; }
-    .info-value.green  { color:var(--green);  font-weight:500; }
+    .info-label { font-size:10px; font-weight:500; color:var(--text-3); text-transform:uppercase; letter-spacing:.55px; }
+    .info-value { font-size:14px; color:var(--text-1); line-height:1.3; word-break:break-all; }
+    .info-value.accent { color:var(--accent); }
 
-    /* ── Stats row ── */
-    .stats-row {
-      display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem;
-      margin-bottom:1.25rem;
+    /* ── Doc cédula ── */
+    .doc-badge {
+      display:flex; align-items:center; gap:6px;
+      background:rgba(34,197,94,0.08); border:.5px solid rgba(34,197,94,0.25);
+      border-radius:6px; padding:6px 10px; cursor:pointer;
+      transition:background var(--t);
     }
-    .stat-card {
-      background:var(--card); border:.5px solid var(--border);
-      border-radius:var(--r); padding:12px 14px;
-      text-align:center; animation:fadeUp .4s ease;
-    }
+    .doc-badge:hover { background:rgba(34,197,94,0.15); }
+    .doc-badge i { font-size:16px; color:var(--green); flex-shrink:0; }
+    .doc-badge span { font-size:11px; color:var(--green); font-weight:500; }
+
+    /* ── Stats ── */
+    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; margin-bottom:1.25rem; }
+    .stat-card { background:var(--card); border:.5px solid var(--border); border-radius:var(--r); padding:12px 14px; text-align:center; }
     .stat-val   { font-size:20px; font-weight:500; color:var(--text-1); letter-spacing:-.5px; }
     .stat-label { font-size:11px; color:var(--text-3); margin-top:2px; font-weight:300; }
 
-    /* ── Details card ── */
+    /* ── Detail card ── */
     .detail-card {
       background:var(--card); border:.5px solid var(--border);
       border-radius:var(--radius-card); padding:1.5rem;
@@ -121,25 +110,37 @@
       padding:9px 0; border-bottom:.5px solid var(--border);
     }
     .detail-row:last-child { border-bottom:none; padding-bottom:0; }
-    .detail-key { font-size:12px; color:var(--text-3); font-weight:400; }
-    .detail-val { font-size:13px; color:var(--text-1); font-weight:400; text-align:right; max-width:60%; word-break:break-all; }
+    .detail-key { font-size:12px; color:var(--text-3); }
+    .detail-val { font-size:13px; color:var(--text-1); text-align:right; max-width:65%; word-break:break-all; }
 
-    /* ── Cedula doc ── */
-    .cedula-doc-box {
-      background:var(--input-bg); border:.5px solid var(--border);
-      border-radius:var(--r); padding:1rem;
-      display:flex; align-items:center; gap:10px;
+    /* ── Transactions ── */
+    .tx-list { display:flex; flex-direction:column; gap:.6rem; }
+    .tx-item {
+      background:var(--card-2); border:.5px solid var(--border);
+      border-radius:var(--r); padding:11px 14px;
+      display:flex; align-items:center; gap:12px;
     }
-    .cedula-doc-box i { font-size:24px; color:var(--accent); flex-shrink:0; }
+    .tx-icon { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+    .tx-icon.out  { background:rgba(239,68,68,0.1);  color:var(--red); }
+    .tx-icon.in   { background:rgba(34,197,94,0.1);  color:var(--green); }
+    .tx-icon.dep  { background:rgba(139,92,246,0.1); color:var(--accent); }
+    .tx-icon.with { background:rgba(239,68,68,0.1);  color:var(--red); }
+    .tx-info { flex:1; min-width:0; }
+    .tx-title { font-size:13px; font-weight:500; color:var(--text-1); }
+    .tx-sub   { font-size:11px; color:var(--text-3); margin-top:2px; }
+    .tx-amt   { font-size:14px; font-weight:500; flex-shrink:0; }
+    .tx-amt.out  { color:var(--red); }
+    .tx-amt.in   { color:var(--green); }
+    .tx-amt.dep  { color:var(--accent); }
+    .tx-amt.with { color:var(--red); }
 
-    /* ── Loading ── */
-    .loading-state { text-align:center; padding:3rem; color:var(--text-3); font-size:14px; }
+    .empty-state { text-align:center; padding:2.5rem 1rem; color:var(--text-3); }
+    .empty-state i { font-size:30px; display:block; margin-bottom:.75rem; color:var(--text-4); }
 
     @media (max-width:500px) {
-      .profile-grid { grid-template-columns:1fr 1fr; }
-      .col-center { grid-column:1/3; order:-1; flex-direction:row; justify-content:center; gap:1rem; }
-      .col-left, .col-right { grid-column:span 1; }
-      .stats-row { grid-template-columns:repeat(2,1fr); }
+      .profile-grid { grid-template-columns:1fr; }
+      .col-center { flex-direction:row; justify-content:flex-start; gap:1rem; order:-1; }
+      .stats-row { grid-template-columns:1fr 1fr; }
     }
   </style>
 </head>
@@ -161,18 +162,19 @@
 </nav>
 
 <div class="page-wrap">
-  <div id="loadingState" class="loading-state">
+
+  <div id="loadingState" style="text-align:center;padding:3rem;color:var(--text-3);font-size:14px">
     <i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:24px;display:block;margin-bottom:.75rem"></i>
     Cargando perfil…
   </div>
 
   <div id="profileContent" style="display:none">
 
-    <!-- ── Header card con layout del sketch ── -->
+    <!-- ── Header card — layout 3 columnas ── -->
     <div class="profile-header">
       <div class="profile-grid">
 
-        <!-- Columna izquierda: Nombre, Apellido, Fecha de nacimiento, Imagen cédula -->
+        <!-- Izquierda: Nombre, Apellido, Fecha nac, Doc cédula -->
         <div class="col-left">
           <div class="info-item">
             <span class="info-label">Nombre</span>
@@ -186,25 +188,26 @@
             <span class="info-label">Fecha de nacimiento</span>
             <span class="info-value" id="pBirthDate">—</span>
           </div>
-          <div class="info-item" style="margin-top:.25rem">
-            <span class="info-label">Doc. Cédula</span>
-            <div class="cedula-doc-box" id="cedulaDocBox">
+          <div class="info-item">
+            <span class="info-label">Imagen de cédula</span>
+            <div class="doc-badge" id="docBadge" style="display:none">
               <i class="ti ti-file-check"></i>
-              <span style="font-size:12px;color:var(--text-2)" id="cedulaDocName">—</span>
+              <span id="docBadgeText">Ver documento</span>
             </div>
+            <span id="docNone" style="font-size:12px;color:var(--text-4)">No registrado</span>
           </div>
         </div>
 
-        <!-- Columna central: Foto + Edad -->
+        <!-- Centro: Foto + Edad -->
         <div class="col-center">
-          <div class="photo-label">Foto de perfil</div>
-          <div class="profile-photo-wrap">
-            <div class="profile-photo-placeholder" id="photoPlaceholder">?</div>
+          <span class="photo-label">Foto de perfil</span>
+          <div class="profile-photo-wrap" id="photoWrap">
+            <span class="photo-initial" id="photoInitial">?</span>
           </div>
           <div class="age-badge" id="pAge">— años</div>
         </div>
 
-        <!-- Columna derecha: Correo, Teléfono -->
+        <!-- Derecha: Correo, Teléfono -->
         <div class="col-right">
           <div class="info-item">
             <span class="info-label">Correo</span>
@@ -223,7 +226,6 @@
             <span class="info-value" id="pSince">—</span>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -243,7 +245,7 @@
       </div>
     </div>
 
-    <!-- ── Detalles completos ── -->
+    <!-- ── Información completa ── -->
     <div class="detail-card">
       <div class="detail-title"><i class="ti ti-user" style="color:var(--accent)"></i> Información completa</div>
       <div class="detail-row">
@@ -275,9 +277,19 @@
         <span class="detail-val">Usuario</span>
       </div>
       <div class="detail-row">
-        <span class="detail-key">Firma digital</span>
-        <span class="detail-val" id="dSignature">Sin firma</span>
+        <span class="detail-key">Firma digital (Lab 2)</span>
+        <span class="detail-val" id="dSignature">—</span>
       </div>
+    </div>
+
+    <!-- ── Historial de transacciones ── -->
+    <div class="detail-card">
+      <div class="detail-title">
+        <i class="ti ti-receipt" style="color:var(--accent)"></i>
+        Historial de transacciones
+        <span id="txCountBadge" style="margin-left:auto;background:var(--input-bg);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--text-3);font-weight:400;letter-spacing:0;text-transform:none"></span>
+      </div>
+      <div id="txList"></div>
     </div>
 
     <!-- Acciones -->
@@ -289,10 +301,9 @@
       </div>
     </a>
     <a href="profile.html" style="text-decoration:none">
-      <div class="detail-card" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:1.1rem 1.5rem;
-           border-color:rgba(139,92,246,0.2);background:rgba(139,92,246,0.04)">
+      <div class="detail-card" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:1.1rem 1.5rem;border-color:rgba(139,92,246,0.2);background:rgba(139,92,246,0.04)">
         <i class="ti ti-flask" style="font-size:20px;color:var(--accent)"></i>
-        <div style="flex:1"><p style="font-size:13px;font-weight:500;color:var(--text-1)">Lab 2 — Crear / actualizar firma</p></div>
+        <div style="flex:1"><p style="font-size:13px;font-weight:500;color:var(--text-1)">Lab 2 — Crear / actualizar firma digital</p></div>
         <i class="ti ti-arrow-right" style="color:var(--text-4)"></i>
       </div>
     </a>
@@ -306,21 +317,70 @@
 
   function logout() { localStorage.removeItem('session'); }
 
-  function calcAge(birthDateStr) {
-    const d = new Date(birthDateStr);
-    if (isNaN(d.getTime())) return null;
+  // ── Helpers ──
+  function calcAge(dateStr) {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    if (isNaN(d)) return null;
     return Math.floor((Date.now() - d) / (365.25 * 24 * 3600 * 1000));
   }
 
   function formatDate(str) {
     if (!str) return '—';
-    return new Date(str).toLocaleDateString('es', { year:'numeric', month:'long', day:'numeric' });
+    try { return new Date(str).toLocaleDateString('es', { year:'numeric', month:'long', day:'numeric' }); }
+    catch(e) { return str; }
   }
 
   function initials(name) {
-    return (name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    return (name || '?').split(' ').map(w => w[0] || '').join('').toUpperCase().slice(0, 2) || '?';
   }
 
+  function timeAgo(iso) {
+    const diff = (Date.now() - new Date(iso)) / 1000;
+    if (diff < 60)    return 'ahora';
+    if (diff < 3600)  return Math.floor(diff/60) + ' min';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h';
+    return new Date(iso).toLocaleDateString('es', { day:'numeric', month:'short' });
+  }
+
+  function setText(id, val, fallback) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = (val && val !== '') ? val : (fallback || '—');
+  }
+
+  // ── Renderizar transacciones ──
+  function renderTransactions(txs) {
+    const list = document.getElementById('txList');
+    const badge = document.getElementById('txCountBadge');
+
+    if (!txs || txs.length === 0) {
+      badge.textContent = '0 registros';
+      list.innerHTML = '<div class="empty-state"><i class="ti ti-receipt-off"></i><p>Sin transacciones aún</p></div>';
+      return;
+    }
+
+    badge.textContent = txs.length + ' registros';
+
+    list.innerHTML = txs.map(tx => {
+      const map = {
+        transfer_out: { cls:'out',  icon:'ti-send',         sign:'-', amtCls:'out',  title: 'Transferencia a ' + (tx.toName   || tx.to   || '') },
+        transfer_in:  { cls:'in',   icon:'ti-inbox',        sign:'+', amtCls:'in',   title: 'Transferencia de ' + (tx.fromName || tx.from || '') },
+        deposit:      { cls:'dep',  icon:'ti-circle-plus',  sign:'+', amtCls:'dep',  title: 'Depósito' },
+        withdraw:     { cls:'with', icon:'ti-circle-minus', sign:'-', amtCls:'with', title: 'Retiro' }
+      };
+      const m = map[tx.type] || { cls:'dep', icon:'ti-circle', sign:'', amtCls:'dep', title: tx.type };
+      return '<div class="tx-item">' +
+        '<div class="tx-icon ' + m.cls + '"><i class="ti ' + m.icon + '"></i></div>' +
+        '<div class="tx-info">' +
+          '<div class="tx-title">' + m.title + '</div>' +
+          '<div class="tx-sub">' + (tx.description || '') + (tx.description ? ' · ' : '') + timeAgo(tx.date) + '</div>' +
+        '</div>' +
+        '<div class="tx-amt ' + m.amtCls + '">' + m.sign + '$' + parseFloat(tx.amount).toFixed(2) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ── Cargar perfil ──
   async function loadProfile() {
     try {
       const res  = await fetch('/api/update-profile?token=' + encodeURIComponent(session.token));
@@ -329,65 +389,89 @@
       document.getElementById('loadingState').style.display  = 'none';
       document.getElementById('profileContent').style.display = 'block';
 
+      // Usar datos del servidor o fallback a sesión
       const u = data.ok ? data.user : {};
+      const name = u.name || session.name || '';
 
-      // Calcular edad
-      const age = calcAge(u.birthDate);
+      // ── Separar nombre y apellido ──
+      // Si tiene firstName/lastName usar esos, sino partir el name completo
+      const firstName = u.firstName || name.split(' ')[0] || '—';
+      const lastName  = u.lastName  || name.split(' ').slice(1).join(' ') || '—';
+
+      // ── Calcular edad ──
+      const age    = calcAge(u.birthDate);
       const ageStr = age !== null ? age + ' años' : '—';
 
       // ── Header grid ──
-      document.getElementById('pFirstName').textContent = u.firstName || session.name.split(' ')[0] || '—';
-      document.getElementById('pLastName').textContent  = u.lastName  || session.name.split(' ')[1] || '—';
-      document.getElementById('pBirthDate').textContent = u.birthDate ? formatDate(u.birthDate) : '—';
-      document.getElementById('pAge').textContent       = ageStr;
-      document.getElementById('pEmail').textContent     = u.email  || session.email;
-      document.getElementById('pPhone').textContent     = u.phone  || '—';
-      document.getElementById('pCedula').textContent    = u.cedula || '—';
-      document.getElementById('pSince').textContent     = u.createdAt ? new Date(u.createdAt).toLocaleDateString('es',{year:'numeric',month:'short'}) : '—';
+      setText('pFirstName', firstName);
+      setText('pLastName',  lastName);
+      setText('pBirthDate', formatDate(u.birthDate));
+      setText('pAge',       ageStr);
+      setText('pEmail',     u.email  || session.email);
+      setText('pPhone',     u.phone);
+      setText('pCedula',    u.cedula);
+      setText('pSince',     u.createdAt ? new Date(u.createdAt).toLocaleDateString('es', { year:'numeric', month:'short' }) : '—');
 
-      // Foto — desde localStorage
+      // ── Foto de perfil ──
       const localPhoto = localStorage.getItem('photo_' + session.email);
-      const photoWrap  = document.getElementById('photoPlaceholder').parentElement;
       if (localPhoto) {
         const img = document.createElement('img');
-        img.src = localPhoto; img.alt = 'Foto de perfil';
-        document.getElementById('photoPlaceholder').replaceWith(img);
+        img.src = localPhoto; img.alt = 'Foto';
+        document.getElementById('photoInitial').replaceWith(img);
       } else {
-        document.getElementById('photoPlaceholder').textContent = initials(u.name || session.name);
+        document.getElementById('photoInitial').textContent = initials(name);
       }
 
-      // Doc cédula
-      const docName = u.cedulaDocName || '';
-      document.getElementById('cedulaDocName').textContent = docName || 'Documento registrado';
-      const localDoc = localStorage.getItem('doc_' + session.email);
+      // ── Doc cédula ──
+      const localDoc  = localStorage.getItem('doc_' + session.email);
+      const docBadge  = document.getElementById('docBadge');
+      const docNone   = document.getElementById('docNone');
+      const docName   = u.cedulaDocName || 'Documento';
       if (localDoc) {
-        document.getElementById('cedulaDocBox').style.cursor = 'pointer';
-        document.getElementById('cedulaDocBox').title = 'Ver documento';
-        document.getElementById('cedulaDocBox').onclick = () => {
-          const w = window.open(); w.document.write('<img src="' + localDoc + '" style="max-width:100%">');
+        docBadge.style.display = 'flex';
+        docNone.style.display  = 'none';
+        document.getElementById('docBadgeText').textContent = docName;
+        docBadge.onclick = () => {
+          if (localDoc.startsWith('data:application/pdf')) {
+            const w = window.open('', '_blank');
+            w.document.write('<embed src="' + localDoc + '" width="100%" height="100%" type="application/pdf">');
+          } else {
+            const w = window.open('', '_blank');
+            w.document.write('<img src="' + localDoc + '" style="max-width:100%;display:block;margin:auto">');
+          }
         };
       }
 
       // ── Stats ──
-      document.getElementById('statBalance').textContent = '$' + parseFloat(u.balance||0).toFixed(2);
-      document.getElementById('statTx').textContent      = (u.transactions||[]).length;
+      document.getElementById('statBalance').textContent = '$' + parseFloat(u.balance || 0).toFixed(2);
+      document.getElementById('statTx').textContent      = (u.transactions || []).length;
       document.getElementById('statAge').textContent     = age !== null ? age : '—';
 
-      // ── Detalles ──
-      document.getElementById('dFullName').textContent  = u.name    || session.name;
-      document.getElementById('dEmail').textContent     = u.email   || session.email;
-      document.getElementById('dPhone').textContent     = u.phone   || '—';
-      document.getElementById('dCedula').textContent    = u.cedula  || '—';
-      document.getElementById('dBirth').textContent     = u.birthDate ? formatDate(u.birthDate) : '—';
-      document.getElementById('dAge').textContent       = ageStr;
-      document.getElementById('dSignature').textContent = u.signature
-        ? '✓ Firma registrada (' + u.signature.length + ' chars)'
-        : 'Sin firma — ve al Lab 2';
-      document.getElementById('dSignature').style.color = u.signature ? 'var(--green)' : 'var(--red)';
+      // ── Detalles completos ──
+      setText('dFullName', name);
+      setText('dEmail',    u.email  || session.email);
+      setText('dPhone',    u.phone);
+      setText('dCedula',   u.cedula);
+      setText('dBirth',    formatDate(u.birthDate));
+      setText('dAge',      ageStr);
+
+      const sigEl = document.getElementById('dSignature');
+      if (u.signature) {
+        sigEl.textContent = '✓ Firma registrada (' + u.signature.length + ' chars)';
+        sigEl.style.color = 'var(--green)';
+      } else {
+        sigEl.textContent = 'Sin firma — ve al Lab 2';
+        sigEl.style.color = 'var(--red)';
+      }
+
+      // ── Historial de transacciones ──
+      renderTransactions(u.transactions || []);
 
     } catch(e) {
+      console.error('loadProfile error:', e);
       document.getElementById('loadingState').innerHTML =
         '<i class="ti ti-wifi-off" style="font-size:24px;display:block;margin-bottom:.75rem"></i>Error al cargar el perfil';
+      document.getElementById('loadingState').style.display = 'block';
     }
   }
 
