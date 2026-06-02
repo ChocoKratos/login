@@ -7,140 +7,189 @@
   <link rel="stylesheet" href="style.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
   <style>
-    body { display:block; padding:0; }
+    body { display:block; padding:0; font-size:15px; }
 
     .topbar {
       position:sticky; top:0; z-index:100;
-      background:rgba(10,10,10,0.88); backdrop-filter:blur(14px);
+      background:rgba(10,10,10,0.9); backdrop-filter:blur(14px);
       border-bottom:.5px solid var(--border);
-      padding:0 2rem; height:56px;
+      padding:0 1.5rem; height:58px;
       display:flex; align-items:center; justify-content:space-between;
     }
     .topbar-left  { display:flex; align-items:center; gap:12px; }
-    .topbar-logo  { width:28px; height:28px; background:var(--accent); border-radius:7px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 10px var(--accent-glow); }
-    .topbar-logo svg { width:14px; height:14px; }
-    .topbar-title { font-size:15px; font-weight:500; color:var(--text-1); }
+    .topbar-logo  { width:30px; height:30px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 10px var(--accent-glow); }
+    .topbar-logo svg { width:15px; height:15px; }
+    .topbar-title { font-size:16px; font-weight:500; color:var(--text-1); }
     .topbar-right { display:flex; align-items:center; gap:16px; }
-    .topbar-link  { font-size:13px; color:var(--text-3); text-decoration:none; display:flex; align-items:center; gap:4px; transition:color var(--t); }
+    .topbar-link  { font-size:14px; color:var(--text-3); text-decoration:none; display:flex; align-items:center; gap:5px; transition:color var(--t); }
     .topbar-link:hover { color:var(--text-1); }
 
-    .page-wrap { max-width:680px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+    .page-wrap { max-width:700px; margin:0 auto; padding:2rem 1.5rem 5rem; }
 
     /* ── Profile header ── */
     .profile-header {
       background:linear-gradient(135deg,#1a0a2e 0%,#0d0d1a 100%);
       border:.5px solid rgba(139,92,246,0.3);
       border-radius:var(--radius-card);
-      padding:1.75rem; margin-bottom:1.25rem;
+      padding:2rem; margin-bottom:1.5rem;
       position:relative; overflow:hidden;
       animation:fadeUp .4s ease;
     }
     .profile-header::before {
-      content:''; position:absolute; width:200px; height:200px; border-radius:50%;
-      background:rgba(139,92,246,0.07); filter:blur(50px);
-      top:-50px; right:-30px; pointer-events:none;
+      content:''; position:absolute; width:220px; height:220px; border-radius:50%;
+      background:rgba(139,92,246,0.07); filter:blur(60px);
+      top:-60px; right:-30px; pointer-events:none;
     }
 
-    /* ── 3-column grid matching sketch ── */
     .profile-grid {
       display:grid;
-      grid-template-columns:1fr 120px 1fr;
-      gap:1rem;
+      grid-template-columns:1fr 130px 1fr;
+      gap:1.25rem;
       align-items:start;
     }
-    .col-left   { display:flex; flex-direction:column; gap:.85rem; }
-    .col-center { display:flex; flex-direction:column; align-items:center; gap:.5rem; }
-    .col-right  { display:flex; flex-direction:column; gap:.85rem; }
+    .col-left, .col-right { display:flex; flex-direction:column; gap:1rem; }
+    .col-center { display:flex; flex-direction:column; align-items:center; gap:.6rem; }
 
-    /* Photo */
     .profile-photo-wrap {
-      width:100px; height:100px; border-radius:50%;
+      width:110px; height:110px; border-radius:50%;
       border:2.5px solid var(--accent);
-      box-shadow:0 0 20px var(--accent-glow);
+      box-shadow:0 0 24px var(--accent-glow);
       overflow:hidden; background:var(--input-bg);
       display:flex; align-items:center; justify-content:center;
+      cursor:pointer; position:relative;
+    }
+    .profile-photo-wrap:hover::after {
+      content:'Cambiar'; position:absolute; inset:0;
+      background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center;
+      font-size:12px; color:#fff; font-weight:500;
+      border-radius:50%;
     }
     .profile-photo-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
-    .photo-initial { font-size:34px; font-weight:500; color:var(--accent); }
-    .photo-label   { font-size:10px; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; font-weight:500; }
+    .photo-initial { font-size:36px; font-weight:500; color:var(--accent); }
+    .photo-label   { font-size:11px; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; font-weight:500; }
+    #photoFileInput { display:none; }
 
     .age-badge {
       background:var(--accent-soft); color:var(--accent);
       border:.5px solid rgba(139,92,246,0.3);
-      border-radius:20px; padding:4px 12px;
-      font-size:13px; font-weight:500; text-align:center;
+      border-radius:20px; padding:5px 14px;
+      font-size:15px; font-weight:500; text-align:center;
     }
 
-    /* Info items */
-    .info-item { display:flex; flex-direction:column; gap:3px; }
-    .info-label { font-size:10px; font-weight:500; color:var(--text-3); text-transform:uppercase; letter-spacing:.55px; }
-    .info-value { font-size:14px; color:var(--text-1); line-height:1.3; word-break:break-all; }
+    .info-item { display:flex; flex-direction:column; gap:4px; }
+    .info-label { font-size:11px; font-weight:500; color:var(--text-3); text-transform:uppercase; letter-spacing:.55px; }
+    .info-value { font-size:15px; color:var(--text-1); line-height:1.3; word-break:break-all; }
     .info-value.accent { color:var(--accent); }
 
-    /* ── Doc cédula ── */
     .doc-badge {
-      display:flex; align-items:center; gap:6px;
+      display:inline-flex; align-items:center; gap:6px;
       background:rgba(34,197,94,0.08); border:.5px solid rgba(34,197,94,0.25);
       border-radius:6px; padding:6px 10px; cursor:pointer;
+      font-size:13px; color:var(--green); font-weight:500;
       transition:background var(--t);
     }
     .doc-badge:hover { background:rgba(34,197,94,0.15); }
-    .doc-badge i { font-size:16px; color:var(--green); flex-shrink:0; }
-    .doc-badge span { font-size:11px; color:var(--green); font-weight:500; }
 
     /* ── Stats ── */
-    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; margin-bottom:1.25rem; }
-    .stat-card { background:var(--card); border:.5px solid var(--border); border-radius:var(--r); padding:12px 14px; text-align:center; }
-    .stat-val   { font-size:20px; font-weight:500; color:var(--text-1); letter-spacing:-.5px; }
-    .stat-label { font-size:11px; color:var(--text-3); margin-top:2px; font-weight:300; }
+    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; margin-bottom:1.5rem; }
+    .stat-card { background:var(--card); border:.5px solid var(--border); border-radius:var(--r); padding:14px; text-align:center; }
+    .stat-val   { font-size:22px; font-weight:500; color:var(--text-1); letter-spacing:-.5px; }
+    .stat-label { font-size:12px; color:var(--text-3); margin-top:3px; font-weight:300; }
 
-    /* ── Detail card ── */
+    /* ── Detail / Edit card ── */
     .detail-card {
       background:var(--card); border:.5px solid var(--border);
-      border-radius:var(--radius-card); padding:1.5rem;
+      border-radius:var(--radius-card); padding:1.75rem;
       margin-bottom:1.25rem; animation:fadeUp .45s ease;
     }
-    .detail-title {
-      font-size:12px; font-weight:500; color:var(--text-3);
-      text-transform:uppercase; letter-spacing:.5px; margin-bottom:1rem;
-      display:flex; align-items:center; gap:6px;
+    .card-header {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:1.25rem;
     }
+    .card-title { font-size:13px; font-weight:500; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; display:flex; align-items:center; gap:6px; }
+
+    .edit-btn {
+      font-size:13px; font-weight:500; color:var(--accent);
+      background:var(--accent-soft); border:.5px solid rgba(139,92,246,0.2);
+      border-radius:8px; padding:5px 12px; cursor:pointer;
+      font-family:var(--font); transition:background var(--t);
+      display:flex; align-items:center; gap:5px;
+    }
+    .edit-btn:hover { background:rgba(139,92,246,0.2); }
+
+    /* View mode rows */
     .detail-row {
       display:flex; justify-content:space-between; align-items:center;
-      padding:9px 0; border-bottom:.5px solid var(--border);
+      padding:11px 0; border-bottom:.5px solid var(--border);
     }
     .detail-row:last-child { border-bottom:none; padding-bottom:0; }
-    .detail-key { font-size:12px; color:var(--text-3); }
-    .detail-val { font-size:13px; color:var(--text-1); text-align:right; max-width:65%; word-break:break-all; }
+    .detail-key { font-size:13px; color:var(--text-3); }
+    .detail-val { font-size:15px; color:var(--text-1); text-align:right; max-width:60%; word-break:break-all; }
+
+    /* Edit mode */
+    .edit-mode { display:none; }
+    .edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+    .edit-field { display:flex; flex-direction:column; gap:5px; }
+    .edit-label { font-size:11px; font-weight:500; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; }
+    .edit-input {
+      padding:10px 13px; font-size:14px; font-family:var(--font);
+      color:var(--text-1); background:var(--input-bg);
+      border:1px solid var(--border); border-radius:var(--r); outline:none;
+      transition:border-color var(--t), box-shadow var(--t);
+    }
+    .edit-input:focus { border-color:var(--focus-border); box-shadow:0 0 0 3px var(--focus-ring); }
+    .edit-input::placeholder { color:var(--text-4); }
+    .edit-actions { display:flex; gap:.6rem; margin-top:1rem; }
+    .save-btn {
+      padding:10px 20px; font-size:14px; font-weight:500; font-family:var(--font);
+      color:#fff; background:var(--accent); border:none; border-radius:var(--r);
+      cursor:pointer; display:flex; align-items:center; gap:6px;
+      transition:background var(--t); box-shadow:0 4px 16px var(--accent-glow);
+    }
+    .save-btn:hover { background:var(--accent-h); }
+    .save-btn:disabled { opacity:.4; cursor:not-allowed; box-shadow:none; }
+    .save-btn.loading .btn-text { display:none; }
+    .cancel-btn {
+      padding:10px 16px; font-size:14px; font-family:var(--font);
+      color:var(--text-2); background:var(--card-2);
+      border:.5px solid var(--border); border-radius:var(--r); cursor:pointer;
+      transition:background var(--t);
+    }
+    .cancel-btn:hover { background:#1f1f1f; }
+    .small-spinner { display:none; width:14px; height:14px; border:2px solid rgba(255,255,255,.25); border-top-color:#fff; border-radius:50%; }
+    .save-btn.loading .small-spinner { display:block; animation:spin .7s linear infinite; }
 
     /* ── Transactions ── */
     .tx-list { display:flex; flex-direction:column; gap:.6rem; }
-    .tx-item {
-      background:var(--card-2); border:.5px solid var(--border);
-      border-radius:var(--r); padding:11px 14px;
-      display:flex; align-items:center; gap:12px;
-    }
-    .tx-icon { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+    .tx-item { background:var(--card-2); border:.5px solid var(--border); border-radius:var(--r); padding:13px 15px; display:flex; align-items:center; gap:12px; }
+    .tx-icon { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
     .tx-icon.out  { background:rgba(239,68,68,0.1);  color:var(--red); }
     .tx-icon.in   { background:rgba(34,197,94,0.1);  color:var(--green); }
     .tx-icon.dep  { background:rgba(139,92,246,0.1); color:var(--accent); }
     .tx-icon.with { background:rgba(239,68,68,0.1);  color:var(--red); }
     .tx-info { flex:1; min-width:0; }
-    .tx-title { font-size:13px; font-weight:500; color:var(--text-1); }
-    .tx-sub   { font-size:11px; color:var(--text-3); margin-top:2px; }
-    .tx-amt   { font-size:14px; font-weight:500; flex-shrink:0; }
+    .tx-title { font-size:14px; font-weight:500; color:var(--text-1); }
+    .tx-sub   { font-size:12px; color:var(--text-3); margin-top:2px; }
+    .tx-amt   { font-size:15px; font-weight:500; flex-shrink:0; }
     .tx-amt.out  { color:var(--red); }
     .tx-amt.in   { color:var(--green); }
     .tx-amt.dep  { color:var(--accent); }
     .tx-amt.with { color:var(--red); }
 
     .empty-state { text-align:center; padding:2.5rem 1rem; color:var(--text-3); }
-    .empty-state i { font-size:30px; display:block; margin-bottom:.75rem; color:var(--text-4); }
+    .empty-state i { font-size:32px; display:block; margin-bottom:.75rem; color:var(--text-4); }
+    .empty-state p { font-size:14px; }
 
-    @media (max-width:500px) {
+    /* ── Toast ── */
+    .toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); background:var(--green); color:#fff; padding:11px 22px; border-radius:22px; font-size:14px; font-weight:500; opacity:0; transition:opacity .3s; pointer-events:none; z-index:999; display:flex; align-items:center; gap:8px; }
+    .toast.show { opacity:1; }
+    .toast.error { background:var(--red); }
+
+    @media (max-width:520px) {
       .profile-grid { grid-template-columns:1fr; }
-      .col-center { flex-direction:row; justify-content:flex-start; gap:1rem; order:-1; }
+      .col-center { flex-direction:row; order:-1; gap:1rem; }
       .stats-row { grid-template-columns:1fr 1fr; }
+      .edit-grid { grid-template-columns:1fr; }
     }
   </style>
 </head>
@@ -161,221 +210,312 @@
   </div>
 </nav>
 
-<div class="page-wrap">
+<input type="file" id="photoFileInput" accept="image/jpeg,image/png"/>
+<input type="file" id="docFileInput"   accept="application/pdf,image/*"/>
 
-  <div id="loadingState" style="text-align:center;padding:3rem;color:var(--text-3);font-size:14px">
-    <i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:24px;display:block;margin-bottom:.75rem"></i>
+<div class="page-wrap">
+  <div id="loadingState" style="text-align:center;padding:3rem;color:var(--text-3);font-size:15px">
+    <i class="ti ti-loader" style="animation:spin 1s linear infinite;font-size:26px;display:block;margin-bottom:.75rem"></i>
     Cargando perfil…
   </div>
 
   <div id="profileContent" style="display:none">
 
-    <!-- ── Header card — layout 3 columnas ── -->
+    <!-- ── Header ── -->
     <div class="profile-header">
       <div class="profile-grid">
-
-        <!-- Izquierda: Nombre, Apellido, Fecha nac, Doc cédula -->
         <div class="col-left">
-          <div class="info-item">
-            <span class="info-label">Nombre</span>
-            <span class="info-value" id="pFirstName">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Apellido</span>
-            <span class="info-value" id="pLastName">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Fecha de nacimiento</span>
-            <span class="info-value" id="pBirthDate">—</span>
-          </div>
+          <div class="info-item"><span class="info-label">Nombre</span><span class="info-value" id="pFirstName">—</span></div>
+          <div class="info-item"><span class="info-label">Apellido</span><span class="info-value" id="pLastName">—</span></div>
+          <div class="info-item"><span class="info-label">Fecha de nacimiento</span><span class="info-value" id="pBirthDate">—</span></div>
           <div class="info-item">
             <span class="info-label">Imagen de cédula</span>
-            <div class="doc-badge" id="docBadge" style="display:none">
-              <i class="ti ti-file-check"></i>
-              <span id="docBadgeText">Ver documento</span>
+            <div id="docBadge" class="doc-badge" style="display:none" onclick="viewDoc()">
+              <i class="ti ti-file-check"></i><span id="docBadgeText">Ver documento</span>
             </div>
-            <span id="docNone" style="font-size:12px;color:var(--text-4)">No registrado</span>
+            <span id="docNone" style="font-size:13px;color:var(--text-4)">No registrado</span>
+            <button id="docUploadBtn" onclick="document.getElementById('docFileInput').click()"
+                    style="margin-top:6px;background:none;border:.5px solid var(--border);border-radius:6px;
+                    padding:5px 10px;font-size:12px;color:var(--text-3);cursor:pointer;font-family:var(--font);
+                    display:flex;align-items:center;gap:4px;transition:border-color var(--t)">
+              <i class="ti ti-upload"></i> Actualizar doc
+            </button>
           </div>
         </div>
 
-        <!-- Centro: Foto + Edad -->
         <div class="col-center">
           <span class="photo-label">Foto de perfil</span>
-          <div class="profile-photo-wrap" id="photoWrap">
+          <div class="profile-photo-wrap" id="photoWrap" onclick="document.getElementById('photoFileInput').click()" title="Cambiar foto">
             <span class="photo-initial" id="photoInitial">?</span>
           </div>
           <div class="age-badge" id="pAge">— años</div>
         </div>
 
-        <!-- Derecha: Correo, Teléfono -->
         <div class="col-right">
-          <div class="info-item">
-            <span class="info-label">Correo</span>
-            <span class="info-value accent" id="pEmail">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Teléfono</span>
-            <span class="info-value" id="pPhone">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Cédula</span>
-            <span class="info-value" id="pCedula">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Miembro desde</span>
-            <span class="info-value" id="pSince">—</span>
-          </div>
+          <div class="info-item"><span class="info-label">Correo</span><span class="info-value accent" id="pEmail">—</span></div>
+          <div class="info-item"><span class="info-label">Teléfono</span><span class="info-value" id="pPhone">—</span></div>
+          <div class="info-item"><span class="info-label">Cédula</span><span class="info-value" id="pCedula">—</span></div>
+          <div class="info-item"><span class="info-label">Miembro desde</span><span class="info-value" id="pSince">—</span></div>
         </div>
       </div>
     </div>
 
     <!-- ── Stats ── -->
     <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-val" id="statBalance">$0</div>
-        <div class="stat-label">Balance</div>
+      <div class="stat-card"><div class="stat-val" id="statBalance">$0</div><div class="stat-label">Balance</div></div>
+      <div class="stat-card"><div class="stat-val" id="statTx">0</div><div class="stat-label">Transacciones</div></div>
+      <div class="stat-card"><div class="stat-val" id="statAge">—</div><div class="stat-label">Edad</div></div>
+    </div>
+
+    <!-- ── Información + Editar ── -->
+    <div class="detail-card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-user" style="color:var(--accent)"></i> Información completa</div>
+        <button class="edit-btn" id="editToggleBtn" onclick="toggleEdit()">
+          <i class="ti ti-edit"></i> Editar
+        </button>
       </div>
-      <div class="stat-card">
-        <div class="stat-val" id="statTx">0</div>
-        <div class="stat-label">Transacciones</div>
+
+      <!-- Vista -->
+      <div id="viewMode">
+        <div class="detail-row"><span class="detail-key">Nombre completo</span><span class="detail-val" id="dFullName">—</span></div>
+        <div class="detail-row"><span class="detail-key">Correo electrónico</span><span class="detail-val" id="dEmail">—</span></div>
+        <div class="detail-row"><span class="detail-key">Teléfono</span><span class="detail-val" id="dPhone">—</span></div>
+        <div class="detail-row"><span class="detail-key">Cédula</span><span class="detail-val" id="dCedula">—</span></div>
+        <div class="detail-row"><span class="detail-key">Fecha de nacimiento</span><span class="detail-val" id="dBirth">—</span></div>
+        <div class="detail-row"><span class="detail-key">Edad</span><span class="detail-val" id="dAge">—</span></div>
+        <div class="detail-row"><span class="detail-key">Balance</span><span class="detail-val" id="dBalance">$0.00</span></div>
+        <div class="detail-row"><span class="detail-key">Rol</span><span class="detail-val">Usuario</span></div>
+        <div class="detail-row"><span class="detail-key">Firma digital</span><span class="detail-val" id="dSignature">—</span></div>
       </div>
-      <div class="stat-card">
-        <div class="stat-val" id="statAge">—</div>
-        <div class="stat-label">Edad</div>
+
+      <!-- Editar -->
+      <div id="editMode" class="edit-mode">
+        <div class="edit-grid">
+          <div class="edit-field"><label class="edit-label">Nombre</label><input class="edit-input" id="eFirstName" type="text" placeholder="Juan"/></div>
+          <div class="edit-field"><label class="edit-label">Apellido</label><input class="edit-input" id="eLastName" type="text" placeholder="Pérez"/></div>
+          <div class="edit-field"><label class="edit-label">Teléfono</label><input class="edit-input" id="ePhone" type="tel" placeholder="+507 6000-0000"/></div>
+          <div class="edit-field"><label class="edit-label">Cédula</label><input class="edit-input" id="eCedula" type="text" placeholder="8-123-4567"/></div>
+          <div class="edit-field"><label class="edit-label">Fecha de nacimiento</label><input class="edit-input" id="eBirthDate" type="date" style="color-scheme:dark"/></div>
+          <div class="edit-field">
+            <label class="edit-label">Balance (USD)</label>
+            <div style="position:relative">
+              <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-3)">$</span>
+              <input class="edit-input" id="eBalance" type="number" min="0" step="0.01" style="padding-left:26px"/>
+            </div>
+          </div>
+        </div>
+        <div class="edit-actions">
+          <button class="save-btn" id="saveBtn" onclick="saveProfile()">
+            <span class="btn-text"><i class="ti ti-device-floppy"></i> Guardar</span>
+            <span class="small-spinner"></span>
+          </button>
+          <button class="cancel-btn" onclick="toggleEdit()">Cancelar</button>
+        </div>
       </div>
     </div>
 
-    <!-- ── Información completa ── -->
+    <!-- ── Historial ── -->
     <div class="detail-card">
-      <div class="detail-title"><i class="ti ti-user" style="color:var(--accent)"></i> Información completa</div>
-      <div class="detail-row">
-        <span class="detail-key">Nombre completo</span>
-        <span class="detail-val" id="dFullName">—</span>
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-receipt" style="color:var(--accent)"></i> Historial de transacciones</div>
+        <span id="txCountBadge" style="font-size:12px;color:var(--text-3)"></span>
       </div>
-      <div class="detail-row">
-        <span class="detail-key">Correo electrónico</span>
-        <span class="detail-val" id="dEmail">—</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Teléfono</span>
-        <span class="detail-val" id="dPhone">—</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Cédula</span>
-        <span class="detail-val" id="dCedula">—</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Fecha de nacimiento</span>
-        <span class="detail-val" id="dBirth">—</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Edad</span>
-        <span class="detail-val" id="dAge">—</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Rol</span>
-        <span class="detail-val">Usuario</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Firma digital (Lab 2)</span>
-        <span class="detail-val" id="dSignature">—</span>
-      </div>
-    </div>
-
-    <!-- ── Historial de transacciones ── -->
-    <div class="detail-card">
-      <div class="detail-title">
-        <i class="ti ti-receipt" style="color:var(--accent)"></i>
-        Historial de transacciones
-        <span id="txCountBadge" style="margin-left:auto;background:var(--input-bg);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--text-3);font-weight:400;letter-spacing:0;text-transform:none"></span>
-      </div>
-      <div id="txList"></div>
+      <div class="tx-list" id="txList"></div>
     </div>
 
     <!-- Acciones -->
     <a href="wallet.html" style="text-decoration:none">
-      <div class="detail-card" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:1.1rem 1.5rem;margin-bottom:.75rem">
-        <i class="ti ti-wallet" style="font-size:20px;color:var(--green)"></i>
-        <div style="flex:1"><p style="font-size:13px;font-weight:500;color:var(--text-1)">Ir a la billetera</p></div>
+      <div class="detail-card" style="display:flex;align-items:center;gap:14px;cursor:pointer;padding:1.1rem 1.5rem;margin-bottom:.75rem">
+        <i class="ti ti-wallet" style="font-size:22px;color:var(--green)"></i>
+        <div style="flex:1"><p style="font-size:15px;font-weight:500;color:var(--text-1)">Ir a la billetera</p></div>
         <i class="ti ti-arrow-right" style="color:var(--text-4)"></i>
       </div>
     </a>
     <a href="profile.html" style="text-decoration:none">
-      <div class="detail-card" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:1.1rem 1.5rem;border-color:rgba(139,92,246,0.2);background:rgba(139,92,246,0.04)">
-        <i class="ti ti-flask" style="font-size:20px;color:var(--accent)"></i>
-        <div style="flex:1"><p style="font-size:13px;font-weight:500;color:var(--text-1)">Lab 2 — Crear / actualizar firma digital</p></div>
+      <div class="detail-card" style="display:flex;align-items:center;gap:14px;cursor:pointer;padding:1.1rem 1.5rem;border-color:rgba(139,92,246,0.2);background:rgba(139,92,246,0.04)">
+        <i class="ti ti-flask" style="font-size:22px;color:var(--accent)"></i>
+        <div style="flex:1"><p style="font-size:15px;font-weight:500;color:var(--text-1)">Lab 2 — Firma digital HMAC-SHA256</p></div>
         <i class="ti ti-arrow-right" style="color:var(--text-4)"></i>
       </div>
     </a>
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-  let session = null;
+  let session = null, userData = null;
   try { session = JSON.parse(localStorage.getItem('session')); } catch(e) {}
   if (!session) window.location.href = 'index.html';
 
   function logout() { localStorage.removeItem('session'); }
 
-  // ── Helpers ──
-  function calcAge(dateStr) {
-    if (!dateStr) return null;
-    const d = new Date(dateStr);
-    if (isNaN(d)) return null;
-    return Math.floor((Date.now() - d) / (365.25 * 24 * 3600 * 1000));
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.className = 'toast ' + (type||'') + ' show';
+    t.innerHTML = '<i class="ti ti-' + (type==='error'?'alert-circle':'circle-check') + '"></i> ' + msg;
+    setTimeout(() => t.className = 'toast', 3000);
   }
 
-  function formatDate(str) {
-    if (!str) return '—';
-    try { return new Date(str).toLocaleDateString('es', { year:'numeric', month:'long', day:'numeric' }); }
-    catch(e) { return str; }
+  function calcAge(d) {
+    if (!d) return null;
+    const dt = new Date(d);
+    if (isNaN(dt)) return null;
+    return Math.floor((Date.now() - dt) / (365.25*24*3600*1000));
   }
 
-  function initials(name) {
-    return (name || '?').split(' ').map(w => w[0] || '').join('').toUpperCase().slice(0, 2) || '?';
+  function formatDate(s) {
+    if (!s) return '—';
+    try { return new Date(s).toLocaleDateString('es',{year:'numeric',month:'long',day:'numeric'}); }
+    catch(e) { return s; }
+  }
+
+  function initials(n) {
+    return (n||'?').split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?';
   }
 
   function timeAgo(iso) {
-    const diff = (Date.now() - new Date(iso)) / 1000;
-    if (diff < 60)    return 'ahora';
-    if (diff < 3600)  return Math.floor(diff/60) + ' min';
-    if (diff < 86400) return Math.floor(diff/3600) + 'h';
-    return new Date(iso).toLocaleDateString('es', { day:'numeric', month:'short' });
+    const d = (Date.now()-new Date(iso))/1000;
+    if (d<60) return 'ahora';
+    if (d<3600) return Math.floor(d/60)+' min';
+    if (d<86400) return Math.floor(d/3600)+'h';
+    return new Date(iso).toLocaleDateString('es',{day:'numeric',month:'short'});
   }
 
-  function setText(id, val, fallback) {
+  function set(id, val, fb) {
     const el = document.getElementById(id);
-    if (el) el.textContent = (val && val !== '') ? val : (fallback || '—');
+    if (el) el.textContent = (val&&val!=='') ? val : (fb||'—');
   }
 
-  // ── Renderizar transacciones ──
-  function renderTransactions(txs) {
-    const list = document.getElementById('txList');
-    const badge = document.getElementById('txCountBadge');
+  // ── Foto de perfil ──
+  document.getElementById('photoFileInput').addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    if (file.size > 2*1024*1024) { showToast('Máximo 2MB', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const b64 = e.target.result;
+      localStorage.setItem('photo_' + session.email, b64);
+      // Actualizar foto en pantalla
+      const wrap = document.getElementById('photoWrap');
+      let img = wrap.querySelector('img');
+      if (!img) {
+        img = document.createElement('img'); img.alt='Foto';
+        document.getElementById('photoInitial').replaceWith(img);
+      }
+      img.src = b64;
+      showToast('Foto actualizada');
+    };
+    reader.readAsDataURL(file);
+  });
 
-    if (!txs || txs.length === 0) {
-      badge.textContent = '0 registros';
-      list.innerHTML = '<div class="empty-state"><i class="ti ti-receipt-off"></i><p>Sin transacciones aún</p></div>';
+  // ── Documento cédula ──
+  document.getElementById('docFileInput').addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    if (file.size > 5*1024*1024) { showToast('Máximo 5MB', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      localStorage.setItem('doc_' + session.email, e.target.result);
+      document.getElementById('docBadge').style.display = 'inline-flex';
+      document.getElementById('docNone').style.display  = 'none';
+      document.getElementById('docBadgeText').textContent = file.name;
+      showToast('Documento actualizado');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function viewDoc() {
+    const d = localStorage.getItem('doc_' + session.email);
+    if (!d) return;
+    const w = window.open('','_blank');
+    if (d.startsWith('data:application/pdf')) {
+      w.document.write('<embed src="'+d+'" width="100%" height="100%" type="application/pdf">');
+    } else {
+      w.document.write('<img src="'+d+'" style="max-width:100%;display:block;margin:auto">');
+    }
+  }
+
+  // ── Toggle edición ──
+  function toggleEdit() {
+    const vm = document.getElementById('viewMode');
+    const em = document.getElementById('editMode');
+    const btn = document.getElementById('editToggleBtn');
+    const editing = em.style.display === 'block';
+    vm.style.display = editing ? 'block' : 'none';
+    em.style.display = editing ? 'none'  : 'block';
+    btn.innerHTML = editing
+      ? '<i class="ti ti-edit"></i> Editar'
+      : '<i class="ti ti-x"></i> Cancelar';
+    if (!editing && userData) populateEditForm(userData);
+  }
+
+  function populateEditForm(u) {
+    document.getElementById('eFirstName').value = u.firstName || u.name.split(' ')[0] || '';
+    document.getElementById('eLastName').value  = u.lastName  || u.name.split(' ').slice(1).join(' ') || '';
+    document.getElementById('ePhone').value     = u.phone     || '';
+    document.getElementById('eCedula').value    = u.cedula    || '';
+    document.getElementById('eBirthDate').value = u.birthDate || '';
+    document.getElementById('eBalance').value   = u.balance   || 0;
+  }
+
+  // ── Guardar perfil ──
+  async function saveProfile() {
+    const btn = document.getElementById('saveBtn');
+    btn.classList.add('loading'); btn.disabled = true;
+    try {
+      const res = await fetch('/api/update-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token:     session.token,
+          firstName: document.getElementById('eFirstName').value,
+          lastName:  document.getElementById('eLastName').value,
+          phone:     document.getElementById('ePhone').value,
+          cedula:    document.getElementById('eCedula').value,
+          birthDate: document.getElementById('eBirthDate').value,
+          balance:   parseFloat(document.getElementById('eBalance').value || 0)
+        })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showToast('Perfil actualizado ✓');
+        toggleEdit();
+        await loadProfile(); // recargar datos
+      } else {
+        showToast(data.error || 'Error al guardar', 'error');
+      }
+    } catch(e) {
+      showToast('Error de conexión', 'error');
+    } finally {
+      btn.classList.remove('loading'); btn.disabled = false;
+    }
+  }
+
+  // ── Transacciones ──
+  function renderTx(txs) {
+    document.getElementById('txCountBadge').textContent = txs.length + ' registros';
+    if (!txs.length) {
+      document.getElementById('txList').innerHTML =
+        '<div class="empty-state"><i class="ti ti-receipt-off"></i><p>Sin transacciones aún</p></div>';
       return;
     }
-
-    badge.textContent = txs.length + ' registros';
-
-    list.innerHTML = txs.map(tx => {
-      const map = {
-        transfer_out: { cls:'out',  icon:'ti-send',         sign:'-', amtCls:'out',  title: 'Transferencia a ' + (tx.toName   || tx.to   || '') },
-        transfer_in:  { cls:'in',   icon:'ti-inbox',        sign:'+', amtCls:'in',   title: 'Transferencia de ' + (tx.fromName || tx.from || '') },
-        deposit:      { cls:'dep',  icon:'ti-circle-plus',  sign:'+', amtCls:'dep',  title: 'Depósito' },
-        withdraw:     { cls:'with', icon:'ti-circle-minus', sign:'-', amtCls:'with', title: 'Retiro' }
-      };
-      const m = map[tx.type] || { cls:'dep', icon:'ti-circle', sign:'', amtCls:'dep', title: tx.type };
+    const map = {
+      transfer_out: { cls:'out',  icon:'ti-send',         sign:'-', ac:'out',  t: tx => 'Transferencia a '+(tx.toName||tx.to||'') },
+      transfer_in:  { cls:'in',   icon:'ti-inbox',        sign:'+', ac:'in',   t: tx => 'Transferencia de '+(tx.fromName||tx.from||'') },
+      deposit:      { cls:'dep',  icon:'ti-circle-plus',  sign:'+', ac:'dep',  t: () => 'Depósito' },
+      withdraw:     { cls:'with', icon:'ti-circle-minus', sign:'-', ac:'with', t: () => 'Retiro' }
+    };
+    document.getElementById('txList').innerHTML = txs.map(tx => {
+      const m = map[tx.type] || { cls:'dep', icon:'ti-circle', sign:'', ac:'dep', t:()=>tx.type };
       return '<div class="tx-item">' +
-        '<div class="tx-icon ' + m.cls + '"><i class="ti ' + m.icon + '"></i></div>' +
+        '<div class="tx-icon '+m.cls+'"><i class="ti '+m.icon+'"></i></div>' +
         '<div class="tx-info">' +
-          '<div class="tx-title">' + m.title + '</div>' +
-          '<div class="tx-sub">' + (tx.description || '') + (tx.description ? ' · ' : '') + timeAgo(tx.date) + '</div>' +
+          '<div class="tx-title">'+m.t(tx)+'</div>' +
+          '<div class="tx-sub">'+(tx.description?tx.description+' · ':'')+timeAgo(tx.date)+'</div>' +
         '</div>' +
-        '<div class="tx-amt ' + m.amtCls + '">' + m.sign + '$' + parseFloat(tx.amount).toFixed(2) + '</div>' +
+        '<div class="tx-amt '+m.ac+'">'+m.sign+'$'+parseFloat(tx.amount).toFixed(2)+'</div>' +
       '</div>';
     }).join('');
   }
@@ -383,95 +523,77 @@
   // ── Cargar perfil ──
   async function loadProfile() {
     try {
-      const res  = await fetch('/api/update-profile?token=' + encodeURIComponent(session.token));
+      const res  = await fetch('/api/update-profile?token='+encodeURIComponent(session.token));
       const data = await res.json();
 
-      document.getElementById('loadingState').style.display  = 'none';
+      document.getElementById('loadingState').style.display   = 'none';
       document.getElementById('profileContent').style.display = 'block';
 
-      // Usar datos del servidor o fallback a sesión
       const u = data.ok ? data.user : {};
+      userData = u;
       const name = u.name || session.name || '';
+      const firstName = u.firstName || name.split(' ')[0]  || '';
+      const lastName  = u.lastName  || name.split(' ').slice(1).join(' ') || '';
+      const age = calcAge(u.birthDate);
+      const ageStr = age !== null ? age+' años' : '—';
 
-      // ── Separar nombre y apellido ──
-      // Si tiene firstName/lastName usar esos, sino partir el name completo
-      const firstName = u.firstName || name.split(' ')[0] || '—';
-      const lastName  = u.lastName  || name.split(' ').slice(1).join(' ') || '—';
+      // Header
+      set('pFirstName', firstName);
+      set('pLastName',  lastName);
+      set('pBirthDate', formatDate(u.birthDate));
+      set('pAge',       ageStr);
+      set('pEmail',     u.email || session.email);
+      set('pPhone',     u.phone);
+      set('pCedula',    u.cedula);
+      set('pSince',     u.createdAt ? new Date(u.createdAt).toLocaleDateString('es',{year:'numeric',month:'short'}) : '—');
 
-      // ── Calcular edad ──
-      const age    = calcAge(u.birthDate);
-      const ageStr = age !== null ? age + ' años' : '—';
-
-      // ── Header grid ──
-      setText('pFirstName', firstName);
-      setText('pLastName',  lastName);
-      setText('pBirthDate', formatDate(u.birthDate));
-      setText('pAge',       ageStr);
-      setText('pEmail',     u.email  || session.email);
-      setText('pPhone',     u.phone);
-      setText('pCedula',    u.cedula);
-      setText('pSince',     u.createdAt ? new Date(u.createdAt).toLocaleDateString('es', { year:'numeric', month:'short' }) : '—');
-
-      // ── Foto de perfil ──
+      // Foto
       const localPhoto = localStorage.getItem('photo_' + session.email);
       if (localPhoto) {
-        const img = document.createElement('img');
-        img.src = localPhoto; img.alt = 'Foto';
+        const img = document.createElement('img'); img.src=localPhoto; img.alt='Foto';
         document.getElementById('photoInitial').replaceWith(img);
       } else {
         document.getElementById('photoInitial').textContent = initials(name);
       }
 
-      // ── Doc cédula ──
-      const localDoc  = localStorage.getItem('doc_' + session.email);
-      const docBadge  = document.getElementById('docBadge');
-      const docNone   = document.getElementById('docNone');
-      const docName   = u.cedulaDocName || 'Documento';
-      if (localDoc) {
-        docBadge.style.display = 'flex';
-        docNone.style.display  = 'none';
-        document.getElementById('docBadgeText').textContent = docName;
-        docBadge.onclick = () => {
-          if (localDoc.startsWith('data:application/pdf')) {
-            const w = window.open('', '_blank');
-            w.document.write('<embed src="' + localDoc + '" width="100%" height="100%" type="application/pdf">');
-          } else {
-            const w = window.open('', '_blank');
-            w.document.write('<img src="' + localDoc + '" style="max-width:100%;display:block;margin:auto">');
-          }
-        };
+      // Doc
+      const localDoc = localStorage.getItem('doc_' + session.email);
+      if (localDoc || u.cedulaDocName) {
+        document.getElementById('docBadge').style.display = 'inline-flex';
+        document.getElementById('docNone').style.display  = 'none';
+        document.getElementById('docBadgeText').textContent = u.cedulaDocName || 'Documento';
       }
 
-      // ── Stats ──
-      document.getElementById('statBalance').textContent = '$' + parseFloat(u.balance || 0).toFixed(2);
-      document.getElementById('statTx').textContent      = (u.transactions || []).length;
+      // Stats
+      document.getElementById('statBalance').textContent = '$'+parseFloat(u.balance||0).toFixed(2);
+      document.getElementById('statTx').textContent      = (u.transactions||[]).length;
       document.getElementById('statAge').textContent     = age !== null ? age : '—';
 
-      // ── Detalles completos ──
-      setText('dFullName', name);
-      setText('dEmail',    u.email  || session.email);
-      setText('dPhone',    u.phone);
-      setText('dCedula',   u.cedula);
-      setText('dBirth',    formatDate(u.birthDate));
-      setText('dAge',      ageStr);
+      // Detalles
+      set('dFullName', name);
+      set('dEmail',    u.email||session.email);
+      set('dPhone',    u.phone);
+      set('dCedula',   u.cedula);
+      set('dBirth',    formatDate(u.birthDate));
+      set('dAge',      ageStr);
+      document.getElementById('dBalance').textContent = '$'+parseFloat(u.balance||0).toFixed(2);
 
       const sigEl = document.getElementById('dSignature');
       if (u.signature) {
-        sigEl.textContent = '✓ Firma registrada (' + u.signature.length + ' chars)';
+        sigEl.textContent = '✓ Firma registrada ('+u.signature.length+' chars)';
         sigEl.style.color = 'var(--green)';
       } else {
         sigEl.textContent = 'Sin firma — ve al Lab 2';
         sigEl.style.color = 'var(--red)';
       }
 
-      // ── Historial de transacciones ──
-      renderTransactions(u.transactions || []);
+      // Historial
+      renderTx(u.transactions || []);
 
     } catch(e) {
-      console.error('loadProfile error:', e);
+      console.error(e);
       document.getElementById('loadingState').innerHTML =
-        '<i class="ti ti-wifi-off" style="font-size:24px;display:block;margin-bottom:.75rem"></i>Error al cargar el perfil';
-      document.getElementById('loadingState').style.display = 'block';
+        '<i class="ti ti-wifi-off" style="font-size:26px;display:block;margin-bottom:.75rem"></i>Error al cargar el perfil';
     }
   }
 
