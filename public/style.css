@@ -32,6 +32,8 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+html { font-size: 17px; }
+
 body {
   font-family: var(--font);
   background: var(--bg);
@@ -77,14 +79,14 @@ body {
 }
 .logo svg { width: 18px; height: 18px; }
 
-h2 { font-size: 23px; font-weight: 500; color: var(--text-1); letter-spacing: -.4px; margin-bottom: .3rem; }
-.sub { font-size: 14px; font-weight: 300; color: var(--text-3); margin-bottom: 1.75rem; line-height: 1.5; }
+h2 { font-size: 26px; font-weight: 500; color: var(--text-1); letter-spacing: -.4px; margin-bottom: .3rem; }
+.sub { font-size: 15px; font-weight: 300; color: var(--text-3); margin-bottom: 1.75rem; line-height: 1.5; }
 
 /* ── Alert ── */
 .alert {
   display: none; align-items: center; gap: 8px;
   padding: 10px 13px; border-radius: var(--r);
-  font-size: 14px; margin-bottom: 1rem;
+  font-size: 15px; margin-bottom: 1rem;
 }
 .alert.show { display: flex; }
 .alert.error   { background: var(--red-bg);   color: var(--red);   border: .5px solid var(--red-border); }
@@ -104,7 +106,7 @@ input[type="email"],
 input[type="password"],
 input[type="text"] {
   width: 100%; padding: 11px 14px;
-  font-size: 15px; font-family: var(--font);
+  font-size: 16px; font-family: var(--font);
   color: var(--text-1); background: var(--input-bg);
   border: 1px solid var(--border); border-radius: var(--r); outline: none;
   transition: background var(--t), border-color var(--t), box-shadow var(--t);
@@ -138,8 +140,8 @@ input:focus {
 
 /* ── Buttons ── */
 .btn {
-  width: 100%; padding: 12px 16px;
-  font-size: 15px; font-weight: 500; font-family: var(--font);
+  width: 100%; padding: 13px 16px;
+  font-size: 16px; font-weight: 500; font-family: var(--font);
   color: #fff; background: var(--accent);
   border: none; border-radius: var(--r); cursor: pointer;
   display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -167,7 +169,7 @@ input:focus {
 .btn-ghost:hover { background: rgba(255,255,255,0.04); }
 
 /* ── Footer ── */
-.foot { text-align: center; font-size: 14px; color: var(--text-3); margin-top: 1.1rem; font-weight: 300; }
+.foot { text-align: center; font-size: 15px; color: var(--text-3); margin-top: 1.1rem; font-weight: 300; }
 .foot a { color: var(--accent); font-weight: 500; text-decoration: none; }
 .foot a:hover { color: #A78BFA; }
 
@@ -234,7 +236,7 @@ input:focus {
 .dash-row.green i { color: var(--green) !important; }
 .dash-row i { font-size: 20px; color: var(--text-3); flex-shrink: 0; }
 .dash-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .5px; font-weight: 500; }
-.dash-val { font-size: 15px; color: var(--text-1); margin-top: 2px; }
+.dash-val { font-size: 16px; color: var(--text-1); margin-top: 2px; }
 
 /* ── Blog page ── */
 body.blog-page { display: block; padding: 0; }

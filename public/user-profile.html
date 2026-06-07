@@ -385,7 +385,10 @@
 
   function set(id, val, fb) {
     const el = document.getElementById(id);
-    if (el) el.textContent = (val&&val!=='') ? val : (fb||'—');
+    if (!el) return;
+    // Show value if it exists (even "0"), show fallback only if null/undefined/empty string
+    const display = (val !== null && val !== undefined && val !== '') ? val : (fb !== undefined ? fb : '—');
+    el.textContent = display;
   }
 
   // ── Foto de perfil ──
@@ -495,28 +498,31 @@
 
   // ── Transacciones ──
   function renderTx(txs) {
-    document.getElementById('txCountBadge').textContent = txs.length + ' registros';
-    if (!txs.length) {
-      document.getElementById('txList').innerHTML =
-        '<div class="empty-state"><i class="ti ti-receipt-off"></i><p>Sin transacciones aún</p></div>';
+    var badge = document.getElementById('txCountBadge');
+    var list  = document.getElementById('txList');
+    if (!list) return;
+    var count = txs ? txs.length : 0;
+    if (badge) badge.textContent = count + ' registros';
+    if (!count) {
+      list.innerHTML = '<div class="empty-state"><i class="ti ti-receipt-off"></i><p>Sin transacciones aún</p></div>';
       return;
     }
-    const map = {
-      transfer_out: { cls:'out',  icon:'ti-send',         sign:'-', ac:'out',  t: tx => 'Transferencia a '+(tx.toName||tx.to||'') },
-      transfer_in:  { cls:'in',   icon:'ti-inbox',        sign:'+', ac:'in',   t: tx => 'Transferencia de '+(tx.fromName||tx.from||'') },
-      deposit:      { cls:'dep',  icon:'ti-circle-plus',  sign:'+', ac:'dep',  t: () => 'Depósito' },
-      withdraw:     { cls:'with', icon:'ti-circle-minus', sign:'-', ac:'with', t: () => 'Retiro' }
+    var map = {
+      transfer_out: { cls:'out',  icon:'ti-send',        sign:'-', ac:'out',  label: function(t){ return 'Transferencia a '+(t.toName||t.to||''); } },
+      transfer_in:  { cls:'in',   icon:'ti-inbox',       sign:'+', ac:'in',   label: function(t){ return 'Transferencia de '+(t.fromName||t.from||''); } },
+      deposit:      { cls:'dep',  icon:'ti-circle-plus', sign:'+', ac:'dep',  label: function(){ return 'Depósito'; } },
+      withdraw:     { cls:'with', icon:'ti-circle-minus',sign:'-', ac:'with', label: function(){ return 'Retiro'; } }
     };
-    document.getElementById('txList').innerHTML = txs.map(tx => {
-      const m = map[tx.type] || { cls:'dep', icon:'ti-circle', sign:'', ac:'dep', t:()=>tx.type };
-      return '<div class="tx-item">' +
-        '<div class="tx-icon '+m.cls+'"><i class="ti '+m.icon+'"></i></div>' +
-        '<div class="tx-info">' +
-          '<div class="tx-title">'+m.t(tx)+'</div>' +
-          '<div class="tx-sub">'+(tx.description?tx.description+' · ':'')+timeAgo(tx.date)+'</div>' +
-        '</div>' +
-        '<div class="tx-amt '+m.ac+'">'+m.sign+'$'+parseFloat(tx.amount).toFixed(2)+'</div>' +
-      '</div>';
+    list.innerHTML = txs.map(function(tx) {
+      var m     = map[tx.type] || { cls:'dep', icon:'ti-circle', sign:'', ac:'dep', label: function(){ return tx.type||'Transacción'; } };
+      var title = m.label(tx);
+      var sub   = (tx.description ? tx.description + ' · ' : '') + timeAgo(tx.date);
+      var amt   = m.sign + '$' + parseFloat(tx.amount||0).toFixed(2);
+      return '<div class="tx-item">'
+        +'<div class="tx-icon '+m.cls+'"><i class="ti '+m.icon+'"></i></div>'
+        +'<div class="tx-info"><div class="tx-title">'+title+'</div><div class="tx-sub">'+sub+'</div></div>'
+        +'<div class="tx-amt '+m.ac+'">'+amt+'</div>'
+        +'</div>';
     }).join('');
   }
 
